@@ -58,5 +58,17 @@ Các nhóm chủ đề xuất hiện trong cuộc thi gồm:
 - Hướng dẫn làm bài 
 - Đưa ra Tip & Tricks
 
+### Minh chứng tham gia
+
+| Ảnh sự kiện 1 | Ảnh sự kiện 2 |
+| --- | --- |
+| ![Ảnh sự kiện 1](/images/4-Event/4.1-Event1/event_1_1.jpg) | ![Ảnh sự kiện 2](/images/4-Event/4.1-Event1/event_1_2.jpg) |
+
+| Ảnh sự kiện 3 | Ảnh sự kiện 4 |
+| --- | --- |
+| ![Ảnh sự kiện 3](/images/4-Event/4.1-Event1/event_1_3.jpeg) | ![Ảnh sự kiện 4](/images/4-Event/4.1-Event1/event_1_4.jpeg) |
+
+<p style="text-align: center;"><em>Hình 4.1. Minh chứng tham gia.</em></p>
+
 
 

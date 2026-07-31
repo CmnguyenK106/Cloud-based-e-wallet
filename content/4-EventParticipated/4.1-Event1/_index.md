@@ -57,3 +57,15 @@ The topic groups featured in the contest included:
 - Introduction to the topics that may appear in the exam
 - Guidance on how to take the exam
 - Tips & Tricks
+
+### Participated Evidence
+
+| Event photo 1 | Event photo 2 |
+| --- | --- |
+| ![Event photo 1](/images/4-Event/4.1-Event1/event_1_1.jpg) | ![Event photo 2](/images/4-Event/4.1-Event1/event_1_2.jpg) |
+
+| Event photo 3 | Event photo 4 |
+| --- | --- |
+| ![Event photo 3](/images/4-Event/4.1-Event1/event_1_3.jpeg) | ![Event photo 4](/images/4-Event/4.1-Event1/event_1_4.jpeg) |
+
+<p style="text-align: center;"><em>Figure 4.1. Participated evidence.</em></p>
