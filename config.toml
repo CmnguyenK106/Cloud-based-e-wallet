@@ -1,10 +1,15 @@
-baseURL = "https://fcaj.namanhishere.com"
+baseURL = "https://CmnguyenK106.github.io/Cloud-based-e-wallet/"
 relativeURLs = false
 canonifyURLs = false
 defaultContentLanguage = "en"
 
 # Change the default theme to be use when building the site with Hugo
 theme = "hugo-theme-learn"
+
+# Security policy to allow getJSON (used by ghcontributors shortcode)
+[security]
+  [security.funcs]
+    getJSON = ["^https?://.*"]
 
 # For search functionality
 [outputs]
