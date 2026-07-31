@@ -88,3 +88,5 @@ Thay vì thực thi truy vấn trực tiếp, Orchestrator ủy quyền tác v�
 <p style="text-align: center;"><em>Figure 3.3. Blog Post.</em></p>
 
 Thông tin chi tiết tại đây [AWS Blog](https://aws.amazon.com/vi/blogs/machine-learning/building-an-agentic-ai-solution-at-bluesight-with-amazon-bedrock/).
+
+Link bài viết [AWS Study Group - Facebook](https://www.facebook.com/groups/660548818043427?multi_permalinks=2227994621298831).

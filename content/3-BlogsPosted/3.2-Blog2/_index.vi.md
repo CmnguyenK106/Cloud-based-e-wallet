@@ -76,3 +76,5 @@ pre: " <b> 3.2. </b> "
 <p style="text-align: center;"><em>Figure 3.3. Blog Post.</em></p>
 
 Thông tin chi tiết tại đây [AWS Blog](https://aws.amazon.com/vi/blogs/machine-learning/accelerating-innovation-how-serverless-machine-learning-on-aws-powers-f1-insights/).
+
+Link bài viết [AWS Study Group - Facebook](https://www.facebook.com/groups/660548818043427?multi_permalinks=2226964921401801).

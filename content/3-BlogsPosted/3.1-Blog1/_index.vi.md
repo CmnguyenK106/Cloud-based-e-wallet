@@ -71,4 +71,6 @@ How Riot Games processes 20 TB of analytics data daily on AWS [Here](https://you
 
 Riot Games Cuts $10M Annual Infrastructure Costs by Migrating to Amazon EKS [Here](https://aws.amazon.com/vi/solutions/case-studies/riot-games-case-study/).
 
-Scaling global game infrastructure using AWS Local Zones with Riot Games [Here](https://aws.amazon.com/vi/solutions/case-studies/riot-games-local-zones-case-study/)
+Scaling global game infrastructure using AWS Local Zones with Riot Games [Here](https://aws.amazon.com/vi/solutions/case-studies/riot-games-local-zones-case-study/).
+
+Link bài viết [AWS Study Group - Facebook](https://www.facebook.com/groups/660548818043427?multi_permalinks=2226935201404773).

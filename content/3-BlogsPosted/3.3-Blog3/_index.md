@@ -88,3 +88,5 @@ Rather than executing queries directly, the Orchestrator delegates tasks to 3 do
 <p style="text-align: center;"><em>Figure 3.3. Blog Post.</em></p>
 
 To learn more, visit the official documentation at [AWS Blog](https://aws.amazon.com/vi/blogs/machine-learning/building-an-agentic-ai-solution-at-bluesight-with-amazon-bedrock/).
+
+Post URL [AWS Study Group - Facebook](https://www.facebook.com/groups/660548818043427?multi_permalinks=2227994621298831).
