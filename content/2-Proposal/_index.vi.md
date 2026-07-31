@@ -6,88 +6,131 @@ chapter: false
 pre: " <b> 2. </b> "
 ---
 
+# Cloud E-Wallet
+## Hệ thống ví điện tử mô phỏng triển khai trên AWS
 
-# Cloud E-Wallet – Ứng dụng ví điện tử mô phỏng triển khai trên AWS
+### 1. Giới thiệu tổng quan
 
+Nhóm đề xuất dự án **Cloud E-Wallet**, một ứng dụng web mô phỏng ví điện tử cho phép người dùng đăng ký, xác minh tài khoản, quản lý hồ sơ và số dư, nạp tiền mô phỏng, chuyển tiền, thanh toán dịch vụ và xem lịch sử giao dịch. Quản trị viên có thể theo dõi tổng quan, quản lý người dùng, giao dịch và danh mục dịch vụ. Dự án phục vụ học tập và trình diễn kỹ thuật, không xử lý tiền thật, không kết nối ngân hàng hoặc cổng thanh toán và không lưu dữ liệu thẻ.
 
-## 1. Tóm tắt đề xuất
+Bên cạnh chức năng nghiệp vụ, dự án tập trung triển khai một hệ thống nhiều tầng trên AWS, trong đó frontend, backend và database được tách biệt; request được định tuyến qua các lớp phù hợp; transactional email được gửi bằng Amazon SES; metrics và tình trạng tài nguyên được theo dõi bằng Amazon CloudWatch.
 
-Nhóm chúng em đề xuất xây dựng **Cloud E-Wallet**, một ứng dụng Web mô phỏng các nghiệp vụ cơ bản của ví điện tử và triển khai trên AWS. Hệ thống giúp người dùng thực hành đăng ký, xác minh email, quản lý tài khoản, theo dõi số dư, nạp tiền mô phỏng, chuyển tiền, thanh toán dịch vụ và xem lịch sử giao dịch. Quản trị viên có thể theo dõi tổng quan, quản lý người dùng, giao dịch và danh mục dịch vụ.
+### 2. Tuyên bố vấn đề
 
-Dự án phục vụ học tập và trình diễn kỹ thuật, không xử lý tiền thật, không kết nối ngân hàng hoặc cổng thanh toán thật và không lưu dữ liệu thẻ.
+Một ứng dụng ví điện tử, dù chỉ mô phỏng, vẫn cần giải quyết đồng thời nhiều yêu cầu: xác thực và phân quyền, cập nhật số dư nhất quán, lưu lịch sử giao dịch, giao diện dễ sử dụng, gửi email theo từng người dùng và vận hành ổn định khi một máy chủ gặp lỗi. Môi trường localhost không thể thể hiện đầy đủ HTTPS, định tuyến frontend/API, health check, phân tách mạng, kiểm soát truy cập hay khả năng thay thế máy chủ không khỏe.
 
-## 2. Vấn đề
+#### *Giải pháp*
 
-Một ứng dụng ví điện tử dù ở mức mô phỏng vẫn cần giải quyết đồng thời nhiều yêu cầu: xác thực an toàn, phân quyền người dùng/quản trị viên, cập nhật số dư nhất quán, lưu lịch sử giao dịch, cung cấp giao diện responsive và triển khai các thành phần Web trên Cloud.
+Cloud E-Wallet được thiết kế với Amazon S3 và Amazon CloudFront để lưu trữ, phân phối frontend React qua HTTPS. AWS WAF được gắn với CloudFront để kiểm tra request trước origin. Nhánh `/api/*` đi qua Application Load Balancer và Target Group đến hai EC2 backend trong hai private subnet tại hai Availability Zone, do Auto Scaling Group quản lý. Backend Spring Boot chạy trong Docker, truy cập Amazon RDS for MySQL thông qua mạng private và gửi transactional email bằng Amazon SES. Một NAT Gateway trong public subnet cung cấp outbound cho EC2 private; Amazon CloudWatch và AWS KMS hỗ trợ theo dõi tài nguyên và quản lý khóa mã hóa trong phạm vi cấu hình được xác minh.
 
-Nếu chỉ chạy local, nhóm khó đánh giá đầy đủ luồng truy cập production, cấu hình domain/HTTPS, tách frontend-backend-database, bảo mật mạng, health check và dịch vụ email. Vì vậy, dự án cần một kiến trúc AWS đủ rõ ràng để triển khai end-to-end nhưng vẫn phù hợp phạm vi thực tập.
+#### *Cơ sở lựa chọn giải pháp*
 
-## 3. Giải pháp đề xuất
+- **S3 kết hợp CloudFront** giúp frontend tĩnh không phải chạy chung trên EC2, giảm tải cho backend và cung cấp một endpoint HTTPS có khả năng cache tại edge.
+- **AWS WAF** giúp lọc hoặc theo dõi các mẫu request web phổ biến trước origin. WAF bổ sung một lớp bảo vệ ở edge nhưng không thay thế Spring Security, JWT và validation trong backend.
+- **ALB và Target Group** tạo điểm truy cập API ổn định, thực hiện health check và chỉ phân phối request đến các target khỏe mạnh.
+- **Auto Scaling Group** duy trì hai EC2 tại hai Availability Zone và có thể thay thế instance không khỏe. Cấu hình `Min = 0`, `Desired = 2`, `Max = 2` ưu tiên availability của tầng ứng dụng nhưng vẫn giới hạn số tài nguyên phát sinh.
+- **EC2 trong các private subnet** không nhận kết nối trực tiếp từ Internet. Cách bố trí này giảm bề mặt truy cập và tạo thêm một lớp defense-in-depth giữa ALB với backend.
+- **Một NAT Gateway trong public subnet** cung cấp outbound cho EC2 private khi tải package, Docker image hoặc kết nối public service endpoint như SES SMTP. Thiết kế một NAT Gateway phù hợp giới hạn chi phí của dự án, nhưng vẫn tạo một điểm phụ thuộc cho outbound của hai AZ.
+- **RDS MySQL Single-AZ** giúp nhóm sử dụng database managed service và kiểm soát chi phí. Đổi lại, database vẫn là single point of failure của kiến trúc hiện tại.
+- **Amazon SES** phù hợp với transactional email có người nhận và nội dung thay đổi theo từng tài khoản. Amazon SNS phù hợp hơn với notification hoặc alert gửi tới nhóm subscriber cố định nên không thay thế tương đương cho email xác minh người dùng.
+- **CloudWatch** hỗ trợ theo dõi metrics và tình trạng hoạt động của CloudFront, WAF, ALB, EC2, ASG và RDS trong phạm vi dữ liệu mà từng dịch vụ cung cấp.
 
-Giải pháp gồm:
+### 3. Kiến trúc giải pháp
 
-- React 19, TypeScript và Vite cho frontend.
-- Java 17, Spring Boot, Spring Security và JDBC cho REST API.
-- MySQL cho dữ liệu người dùng, token, ví, dịch vụ và giao dịch.
-- BCrypt và JWT cho xác thực; role `user`/`admin` cho phân quyền.
-- Database transaction và khóa hàng ví để bảo vệ cập nhật số dư.
-- Amazon S3 và CloudFront để phân phối frontend.
-- Application Load Balancer và EC2 chạy Dockerized Spring Boot cho backend.
-- Amazon RDS MySQL trong private subnet.
-- Amazon SES SMTP tại Region Singapore (`ap-southeast-1`) qua STARTTLS cho xác minh email và đặt lại mật khẩu; Resend được giữ làm phương án rollback.
-- Cloudflare DNS quản lý domain và các record xác minh email.
+#### *Sơ đồ*
 
-## 4. Kiến trúc giải pháp
+![Kiến trúc triển khai Cloud E-Wallet trên AWS](/images/5-Workshop/5.1-Prerequisites/architecture.png)
+<p align="center"><i>Sơ đồ triển khai Cloud E-Wallet trên AWS</i></p>
 
-Luồng production đề xuất và đã được áp dụng trong dự án:
+#### *Luồng xử lý*
 
-```text
-Người dùng → Cloudflare DNS → Amazon CloudFront
-                                  ├─ Default (*) → S3 frontend
-                                  └─ /api/* → ALB → EC2/Docker/Spring Boot
-                                                       ├─ RDS MySQL
-                                                       └─ Amazon SES SMTP
-```
+1. **User → CloudFront/WAF:** Người dùng gửi HTTPS request đến CloudFront distribution được bảo vệ bởi AWS WAF.
+2. **CloudFront → S3:** Với nội dung frontend, CloudFront lấy static files React từ S3 và cache tại edge locations.
+3. **CloudFront → ALB:** Request có path `/api/*` được chuyển đến internet-facing Application Load Balancer.
+4. **ALB → Target Group → EC2:** ALB kiểm tra `/actuator/health` và forward request đến các EC2 healthy trong Target Group trên port `8080`. ASG quản lý vòng đời EC2; request không đi qua ASG.
+5. **EC2 → RDS:** Backend kết nối RDS MySQL qua port `3306` để đọc, ghi và xử lý transaction.
+6. **EC2 → SES:** Backend gửi email xác minh, gửi lại email xác minh, đặt lại mật khẩu và các email giao dịch phù hợp qua Amazon SES SMTP port `587` với authentication và STARTTLS.
+7. **EC2 → NAT Gateway → Internet Gateway:** Các EC2 private chủ động tạo kết nối outbound qua NAT Gateway trong public subnet và Internet Gateway khi cần truy cập Internet hoặc public service endpoint.
+8. **Monitoring:** CloudWatch thu thập metrics và hỗ trợ theo dõi tình trạng của các dịch vụ phù hợp; CloudWatch và KMS không nằm trong synchronous request path.
 
-> **Hình cần bổ sung:** Sơ đồ kiến trúc Cloud E-Wallet do nhóm xây dựng, thể hiện User, Cloudflare, CloudFront, S3, ALB, EC2, RDS, Internet Gateway, Amazon SES và CloudWatch.
-
-<!-- IMAGE_PATH: /images/2-Proposal/cloud-ewallet-architecture.png -->
-<!-- Sau khi thêm file, bỏ comment dòng Markdown sau: ![Kiến trúc Cloud E-Wallet](/images/2-Proposal/cloud-ewallet-architecture.png) -->
+#### *Dịch vụ sử dụng*
 
 | Thành phần | Vai trò |
 | --- | --- |
-| Cloudflare DNS | Quản lý `cloud-ewallet.com` và record xác minh sender domain |
-| CloudFront | Nhận HTTPS từ trình duyệt; định tuyến frontend và `/api/*` |
-| S3 | Lưu static build React |
-| ALB | Chuyển tiếp API, thực hiện health check backend |
-| EC2 | Chạy Spring Boot trong Docker |
-| RDS MySQL | Lưu dữ liệu trong private subnet |
-| Amazon SES SMTP | Gửi email xác minh và đặt lại mật khẩu; dùng SMTP `587`, xác thực và STARTTLS |
-| CloudWatch | Theo dõi metrics AWS; log/alarm tùy chỉnh chỉ ghi nhận khi có cấu hình thực tế |
+| Amazon S3 | Lưu static build của frontend React trong private bucket |
+| Amazon CloudFront | Cung cấp HTTPS, cache frontend và định tuyến `/api/*` đến ALB |
+| AWS WAF | Kiểm tra request tại edge bằng Web ACL gắn với CloudFront |
+| Application Load Balancer | Nhận API traffic và phân phối đến target healthy |
+| Target Group | Đăng ký EC2 port `8080` và health check `/actuator/health` |
+| Auto Scaling Group | Quản lý hai EC2 tại hai AZ với `Min 0 / Desired 2 / Max 2` |
+| Amazon EC2 | Chạy backend Spring Boot trong Docker |
+| Amazon RDS for MySQL | Lưu dữ liệu giao dịch; DB subnet group bao phủ hai private subnet và DB instance chạy Single-AZ |
+| Amazon SES SMTP | Gửi transactional email qua port `587`, authentication và STARTTLS |
+| Amazon CloudWatch | Theo dõi metrics và health của các tài nguyên phù hợp |
+| Internet Gateway | Cung cấp route Internet cho các public subnet |
+| NAT Gateway | Cung cấp outbound Internet cho tài nguyên trong private subnet mà không nhận inbound trực tiếp |
+| AWS KMS | Quản lý khóa mã hóa cho các tài nguyên AWS phù hợp |
+| Security Groups | Giới hạn luồng ALB → EC2 → RDS và kết nối quản trị |
 
-## 5. Triển khai kỹ thuật
+#### *AWS WAF*
 
-### Các giai đoạn triển khai
+Web ACL gắn với CloudFront sử dụng AWS Managed Rule Group `AWS-AWSManagedRulesCommonRuleSet`, tức Core Rule Set có capacity **700 WCU**. Bộ rule bao phủ các nhóm request phổ biến như User-Agent thiếu hoặc bất thường, bad bots cơ bản, SSRF hướng đến EC2 metadata, LFI/RFI, restricted extensions, XSS và giới hạn kích thước request. Một số rule đang ở chế độ **Block**; các rule như SizeRestrictions và CrossSiteScripting được để **Count** nhằm theo dõi sampled requests trước khi quyết định block. Kiến trúc hiện không tuyên bố sử dụng Bot Control, Fraud Control hoặc paid Marketplace rule groups.
 
-Dự án được nhóm chúng em thực hiện qua năm giai đoạn:
+#### *Thiết kế mạng và bảo mật*
+Kiến trúc được triển khai trong một VPC tại AWS Region Singapore (`ap-southeast-1`) và phân bổ trên hai Availability Zone nhằm nâng cao tính sẵn sàng. Mỗi Availability Zone bao gồm một public subnet và một private subnet.
 
-1. **Nghiên cứu và thiết kế:** Phân tích yêu cầu, xác định phạm vi ví điện tử mô phỏng, thiết kế database và kiến trúc frontend – backend – AWS.
-2. **Phát triển trên môi trường local:** Xây dựng React frontend, Spring Boot REST API và MySQL; hoàn thiện xác thực, phân quyền, nghiệp vụ ví và trang quản trị.
-3. **Đóng gói và chuẩn bị Cloud:** Kiểm thử backend/frontend, Docker hóa Spring Boot, tạo VPC, subnet, Security Group và chuẩn bị RDS.
-4. **Triển khai và tích hợp:** Đưa frontend lên S3/CloudFront, chạy backend container trên EC2 sau ALB, kết nối RDS, cấu hình Cloudflare DNS và Amazon SES SMTP.
-5. **Kiểm thử và hoàn thiện:** Thực hiện health check, smoke test nghiệp vụ, kiểm tra email, rà soát bảo mật mạng, theo dõi chi phí và hoàn thiện tài liệu.
+Hai EC2 backend được đặt trong hai private subnet thuộc hai Availability Zone và được quản lý bởi Auto Scaling Group. Các EC2 không có public IP và chỉ nhận lưu lượng ứng dụng từ Application Load Balancer.
 
-### Yêu cầu kỹ thuật
+Amazon RDS for MySQL được triển khai trong tầng mạng private. DB subnet group bao phủ hai private subnet thuộc hai Availability Zone, cho phép AWS lựa chọn subnet phù hợp để đặt cơ sở dữ liệu. Tuy nhiên, hệ thống hiện sử dụng cấu hình RDS Single-AZ, do đó tại một thời điểm chỉ có một DB instance hoạt động trong một Availability Zone và không có standby instance đồng bộ tại AZ còn lại.
 
-- **Frontend:** React 19, TypeScript và Vite; build thành static files trên S3, phân phối qua CloudFront và hỗ trợ responsive.
-- **Backend:** Java 17, Spring Boot, Spring Security, JDBC và Actuator; đóng gói Docker, chạy trên EC2 port `8080` và chỉ nhận traffic ứng dụng từ ALB.
-- **Database:** Amazon RDS for MySQL trong private subnet; Security Group chỉ cho phép backend EC2 kết nối port `3306`; dữ liệu tiếng Việt dùng `utf8mb4`.
-- **Email:** Amazon SES SMTP tại `ap-southeast-1`, port `587`, authentication và STARTTLS; domain identity/DKIM được xác minh qua Cloudflare.
-- **Bảo mật:** BCrypt, JWT có thời hạn, role `user`/`admin`, secret nằm ngoài Git, HTTPS từ người dùng đến CloudFront và giới hạn inbound theo Security Group.
-- **Vận hành:** ALB dùng `/actuator/health` để health check; CloudWatch cung cấp metrics AWS; frontend và backend hiện được triển khai thủ công.
-## 6. Phạm vi chức năng
+Quyền truy cập giữa các tầng được kiểm soát bằng Security Group. EC2 backend chỉ nhận lưu lượng từ Application Load Balancer, trong khi RDS chỉ cho phép kết nối MySQL trên cổng `3306` từ Security Group của EC2.
 
-### Người dùng
+NAT Gateway được đặt trong một public subnet để cung cấp kết nối outbound Internet cho các EC2 trong private subnet. Internet Gateway được gắn trực tiếp với VPC và không thuộc riêng một subnet hoặc Availability Zone nào.
+
+Luồng inbound của ứng dụng:
+
+```text
+User browser
+  → Application Load Balancer: TCP 80/443
+  → Target Group
+  → EC2 backend: TCP 8080
+  → Amazon RDS for MySQL: TCP 3306
+```
+
+Các Security Group được cấu hình theo nguyên tắc giới hạn quyền truy cập:
+
+```text
+ALB Security Group
+  → cho phép inbound TCP 80/443 từ Internet
+
+EC2 Security Group
+  → chỉ cho phép inbound TCP 8080 từ ALB Security Group
+
+RDS Security Group
+  → chỉ cho phép inbound TCP 3306 từ EC2 Security Group
+```
+
+Luồng outbound của EC2:
+
+```text
+EC2 private instance
+  → route table của private subnet
+  → NAT Gateway trong public subnet
+  → Internet Gateway
+  → Internet hoặc dịch vụ sử dụng public endpoint
+```
+
+NAT Gateway chỉ hỗ trợ các kết nối outbound được khởi tạo từ tài nguyên trong private subnet. NAT Gateway không tiếp nhận request từ người dùng và không nằm trong đường inbound của ứng dụng.
+
+Do các EC2 backend được đặt trong private subnet và không có public IP, phiên SSH quản trị phải đi qua một kênh truy cập riêng được kiểm soát. Security Group không mở SSH trực tiếp từ Internet vào tầng backend.
+
+
+#### *High Availability và khả năng mở rộng*
+
+ALB và ASG phân bố compute qua hai Availability Zone. Desired capacity bằng `2` duy trì hai EC2; khi một target không khỏe, ALB ngừng chuyển request đến target đó và ASG có thể tạo instance thay thế. Vì `Max = 2`, cấu hình ưu tiên phục hồi và availability của application tier hơn là mở rộng vượt hai instance. Một NAT Gateway vẫn là điểm phụ thuộc cho outbound, còn RDS Single-AZ là giới hạn availability lớn nhất, nên kiến trúc không được xem là HA end-to-end.
+## 4. Phạm vi chức năng
+
+### 4.1. Người dùng
 
 - Đăng ký, xác minh/gửi lại email xác minh, đăng nhập và đăng xuất.
 - Quên và đặt lại mật khẩu.
@@ -95,101 +138,117 @@ Dự án được nhóm chúng em thực hiện qua năm giai đoạn:
 - Nạp tiền mô phỏng, tra cứu người nhận, chuyển tiền và thanh toán dịch vụ.
 - Xem lịch sử giao dịch.
 
-### Quản trị viên
+### 4.2. Quản trị viên
 
-- Dashboard tổng quan.
+- Xem dashboard tổng quan.
 - Xem và khóa/mở khóa người dùng.
 - Xem giao dịch.
 - Thêm, sửa, kích hoạt hoặc vô hiệu hóa dịch vụ.
 
-### Ngoài phạm vi
+## 5. Triển khai kỹ thuật
 
-Tiền thật, KYC, OTP/SMS thật, payment gateway, ECS/Fargate, Auto Scaling và CI/CD không thuộc phiên bản đề xuất ban đầu. ALB chỉ có một EC2 target nên hệ thống chưa đạt high availability đầy đủ.
+Dự án được thực hiện qua các giai đoạn phân tích yêu cầu và thiết kế; phát triển React, Spring Boot và MySQL ở local; Docker hóa backend; thiết lập VPC, subnet và Security Group; triển khai RDS, EC2, ASG, ALB, S3, CloudFront và WAF; tích hợp SES; sau đó kiểm tra health, nghiệp vụ, email và hoàn thiện tài liệu.
 
-## 7. Lợi ích dự kiến
+- **Frontend:** React 19, TypeScript và Vite; build thành static files trên S3 và phân phối qua CloudFront.
+- **Backend:** Java 17, Spring Boot, Spring Security, JDBC và Actuator; chạy trong Docker trên EC2 port `8080`.
+- **Database:** RDS MySQL Single-AZ trong private subnet; dữ liệu tiếng Việt dùng `utf8mb4`; nghiệp vụ số dư dùng database transaction và row-level locking.
+- **Email:** SES SMTP tại `ap-southeast-1`, port `587`, authentication và STARTTLS.
+- **Bảo mật:** BCrypt, JWT có thời hạn, role `user`/`admin`, secret nằm ngoài Git, HTTPS ở phía người dùng, WAF tại CloudFront và inbound theo Security Group.
+- **Vận hành:** Target Group health check `/actuator/health`; ASG duy trì hai EC2; CloudWatch cung cấp metrics và health monitoring phù hợp.
 
-- Tạo sản phẩm thực hành full-stack và AWS có thể demo end-to-end.
-- Tách rõ giao diện, API và cơ sở dữ liệu.
-- Áp dụng xác thực, phân quyền và transaction vào bài toán có số dư.
-- Hỗ trợ giao diện responsive và nội dung tiếng Việt UTF-8.
-- Tạo nền tảng để nghiên cứu thêm ECS, CI/CD, Auto Scaling, WAF và giám sát nâng cao.
+## 6. Kế hoạch thực hiện
 
-## 8. Kế hoạch thực hiện
-
-| Giai đoạn | Nội dung |
+| Giai đoạn | Nội dung công việc chi tiết |
 | --- | --- |
-| Tuần 1–2 | Phân tích yêu cầu, thiết kế kiến trúc, database và khởi tạo source |
-| Tuần 3–5 | Xây dựng xác thực, nghiệp vụ ví, giao diện người dùng và admin |
-| Tuần 6 | Kiểm thử, sửa lỗi và Docker hóa backend |
-| Tuần 7–8 | Triển khai S3, CloudFront, EC2, RDS, Amazon SES và ALB; kiểm tra production |
-| Tuần 9 | Hoàn thiện sản phẩm, tài liệu và báo cáo |
-| Tuần 10–11 | Tìm hiểu ECS và CI/CD như hướng phát triển, chưa triển khai production |
+| Tuần 1–2 | Khảo sát yêu cầu, tìm hiểu AWS, thiết kế database và kiến trúc tổng thể. |
+| Tuần 3–5 | Phát triển xác thực, phân quyền, hồ sơ, ví, giao dịch và dịch vụ. |
+| Tuần 6 | Hoàn thiện giao diện quản trị và kiểm thử local. |
+| Tuần 7 | Docker hóa backend; chuẩn bị VPC, subnet, Security Group và RDS. |
+| Tuần 8 | Triển khai S3, CloudFront, WAF, ALB, Target Group, EC2 và ASG. |
+| Tuần 9 | Tích hợp SES, kiểm thử production và hoàn thiện báo cáo. |
 
-## 9. Rủi ro và biện pháp giảm thiểu
+## 7. Ước tính ngân sách
 
-| Rủi ro | Ảnh hưởng | Biện pháp |
-| --- | --- | --- |
-| Lộ secret | Cao | Tách file môi trường, dùng placeholder, không commit giá trị thật |
-| Sai lệch số dư | Cao | Transaction, validation và khóa hàng ví |
-| Backend gián đoạn | Cao | Health check ALB; ghi nhận giới hạn một target và đề xuất mở rộng |
-| Chi phí AWS | Trung bình | Theo dõi Billing/Cost Explorer và cleanup tài nguyên |
-| Email không gửi được | Trung bình | Xác minh domain trong SES, kiểm tra trạng thái sandbox, STARTTLS, SMTP credentials, bounce và complaint |
-
-## 10. Chi phí
-
-Chi phí dưới đây là **ước tính**, không phải hóa đơn thực tế. Nhóm chúng em giả định tài nguyên đặt tại Region Singapore (`ap-southeast-1`), sử dụng giá On-Demand, chạy 730 giờ/tháng và chưa gồm thuế hoặc Free Tier. Mức tối đa chỉ là cận trên trong phạm vi giả định của báo cáo; AWS không tự giới hạn chi phí nếu lưu lượng hoặc tài nguyên tiếp tục tăng.
-
-### Chi phí ban đầu
-
-| Khoản chi | Chi phí |
-| --- | ---: |
-| Mua tên miền `cloud-ewallet.com` qua Cloudflare | **10,98 USD** |
-| Phí khởi tạo dịch vụ AWS | **0,00 USD** |
-| **Tổng chi phí ban đầu, thanh toán một lần** | **10,98 USD** |
-
-Tên miền được ghi nhận là khoản mua ban đầu theo số tiền nhóm đã thanh toán và **không được phân bổ vào chi phí duy trì hằng tháng** trong bảng dưới đây. Phí gia hạn trong tương lai chưa được tính vì chưa có số liệu gia hạn thực tế.
+Chi phí dưới đây là dự toán cho Region Singapore (`ap-southeast-1`), giá On-Demand và 730 giờ/tháng. Đây không phải hóa đơn thực tế. Tên miền `cloud-ewallet.com` có giá **10,98 USD** và là khoản thanh toán một lần, không lặp lại trong chi phí duy trì.
 
 ### Giả định sử dụng
 
+Cả ba mức đều giữ đúng kiến trúc `Desired = 2`: hai EC2 `t3.micro`, hai EBS gp3 8 GB, một RDS `db.t4g.micro` Single-AZ 20 GB và một ALB. Mức sử dụng khác nhau ở ALB LCU, S3, CloudFront, SES, CloudWatch và request WAF.
+
 | Hạng mục | Tối thiểu | Trung bình | Tối đa giả định |
 | --- | --- | --- | --- |
-| EC2 và EBS | 1 `t3.micro`, 730 giờ, 8 GB gp3 | Giống mức tối thiểu | Giống mức tối thiểu |
-| RDS MySQL | 1 `db.t3.micro` Single-AZ, 20 GB | Giống mức tối thiểu | Giống mức tối thiểu |
-| ALB | 730 giờ, trung bình 0,1 LCU | 730 giờ, trung bình 0,3 LCU | 730 giờ, trung bình 1 LCU |
-| S3 | 1 GB, ít request | 5 GB, khoảng 30.000 GET và 3.000 PUT | 20 GB, khoảng 100.000 GET và 10.000 PUT |
-| CloudFront | 5 GB và khoảng 50.000 request | 30 GB và khoảng 250.000 request | 100 GB và khoảng 1.000.000 request |
-| Amazon SES | 1.000 email văn bản/tháng | 3.000 email văn bản/tháng | 10.000 email văn bản/tháng |
-| CloudWatch | Chỉ metrics cơ bản | 1 GB log được ingest | 5 GB log được ingest |
+| EC2 và EBS | 2 `t3.micro`; 2 × 8 GB gp3 | Giống mức tối thiểu | Giống mức tối thiểu |
+| RDS MySQL | 1 `db.t4g.micro` Single-AZ, 20 GB | Giống mức tối thiểu | Giống mức tối thiểu |
+| ALB | 0,1 LCU trung bình | 0,3 LCU trung bình | 1 LCU trung bình |
+| S3 | 1 GB, ít request | 5 GB, 30.000 GET và 3.000 PUT | 20 GB, 100.000 GET và 10.000 PUT |
+| CloudFront | 5 GB, 50.000 request | 30 GB, 250.000 request | 100 GB, 1.000.000 request |
+| SES | 1.000 email | 3.000 email | 10.000 email |
+| CloudWatch | Metrics cơ bản | 1 GB log ingest giả định | 5 GB log ingest giả định |
+| AWS WAF | 1 Web ACL, 1 managed rule group, request trong ngưỡng dự toán | Giống mức tối thiểu | Giống mức tối thiểu trong cận trên 10 triệu request |
+| NAT Gateway | 1 gateway, 1 GB xử lý | 1 gateway, 5 GB xử lý | 1 gateway, 20 GB xử lý |
 
 ### Chi phí duy trì hằng tháng
 
 | Dịch vụ | Tối thiểu (USD) | Trung bình (USD) | Tối đa giả định (USD) |
 | --- | ---: | ---: | ---: |
-| EC2 `t3.micro` | 9,64 | 9,64 | 9,64 |
-| EBS gp3 8 GB | 0,80 | 0,80 | 0,80 |
-| RDS MySQL `db.t3.micro` + 20 GB | 21,74 | 21,74 | 21,74 |
+| 2 EC2 `t3.micro` | 19,28 | 19,28 | 19,28 |
+| 2 EBS gp3, mỗi volume 8 GB | 1,60 | 1,60 | 1,60 |
+| RDS MySQL `db.t4g.micro` + 20 GB | 21,74 | 21,74 | 21,74 |
 | Application Load Balancer + LCU | 18,98 | 20,15 | 24,24 |
+| AWS WAF | 12,00 | 12,00 | 12,00 |
+| NAT Gateway (730 giờ + data processing) | 43,13 | 43,37 | 44,25 |
 | S3 storage và request | 0,03 | 0,15 | 0,70 |
-| CloudFront data transfer và request | 0,61 | 3,65 | 12,10 |
+| CloudFront transfer và request | 0,61 | 3,65 | 12,10 |
 | Amazon SES | 0,16 | 0,48 | 1,60 |
 | CloudWatch | 0,00 | 0,50 | 2,50 |
-| **Tổng duy trì ước tính/tháng** | **51,96** | **57,11** | **73,32** |
-| **Tổng tháng đầu nếu cộng tiền mua tên miền** | **62,94** | **68,09** | **84,30** |
+| **Tổng duy trì ước tính/tháng** | **117,53** | **122,92** | **140,01** |
+| **Tổng tháng đầu gồm tên miền** | **128,51** | **133,90** | **150,99** |
 
-### Điều kiện của từng mức chi phí
+Chi phí AWS WAF được ước tính khoảng **12 USD mỗi tháng**, bao gồm 5 USD cho một Web ACL, 1 USD cho một AWS Managed Rule Group và khoảng 6 USD để xử lý tối đa 10 triệu request theo giả định. Rule group `AWSManagedRulesCommonRuleSet` không phát sinh phí subscription riêng như Bot Control hoặc các managed rule group trả phí trên AWS Marketplace.
 
-- **Tối thiểu – 51,96 USD/tháng:** Hệ thống demo chạy liên tục với một EC2 `t3.micro`, một RDS `db.t3.micro` Single-AZ và một ALB; tối đa khoảng 1 GB trên S3, 5 GB qua CloudFront, 1.000 email SES và chỉ dùng metrics CloudWatch cơ bản. Không tính Free Tier, thuế, snapshot hoặc tài nguyên phát sinh ngoài bảng.
-- **Trung bình – 57,11 USD/tháng:** Giữ nguyên cấu hình compute/database nhưng có mức sử dụng thường xuyên hơn: khoảng 5 GB S3, 30 GB CloudFront, 3.000 email SES, 1 GB CloudWatch Logs và trung bình 0,3 LCU. Đây là kịch bản phù hợp cho nhóm dùng thử và trình diễn định kỳ.
-- **Tối đa giả định – 73,32 USD/tháng:** Vẫn giữ một EC2 và một RDS kích thước nhỏ nhưng giả định lưu lượng tăng đến 20 GB S3, 100 GB CloudFront, 10.000 email SES, 5 GB log và trung bình 1 LCU. Nếu phải nâng loại EC2/RDS, thêm target, Multi-AZ, NAT Gateway, WAF hoặc vượt các ngưỡng này, chi phí thực tế có thể cao hơn mức trên.
+Mức chi phí này chỉ mang tính ước tính và có thể tăng khi hệ thống bổ sung rule, vượt quá số lượng request giả định hoặc sử dụng thêm các tính năng như logging, CAPTCHA, Challenge, Bot Control và các paid managed rule group.
 
-Giá AWS thay đổi theo thời điểm, Region, loại tài khoản và mức sử dụng thực tế. Trước khi vận hành lâu dài, nhóm cần nhập cấu hình thật vào AWS Pricing Calculator và đối chiếu Billing/Cost Explorer. Tham khảo: [AWS EC2 Pricing](https://aws.amazon.com/ec2/pricing/on-demand/), [Amazon RDS for MySQL Pricing](https://aws.amazon.com/rds/mysql/pricing/), [Elastic Load Balancing Pricing](https://aws.amazon.com/elasticloadbalancing/pricing/), [Amazon CloudFront Pricing](https://aws.amazon.com/cloudfront/pricing/), [Amazon S3 Pricing](https://aws.amazon.com/s3/pricing/) và [Amazon SES Pricing](https://aws.amazon.com/ses/pricing/).
-> **Hình cần bổ sung:** Kết quả AWS Pricing Calculator hoặc Billing đã che thông tin nhạy cảm.
+Amazon EC2 Auto Scaling không thu phí quản lý riêng. Vì vậy, chi phí của Auto Scaling Group được phản ánh thông qua các tài nguyên mà nhóm quản lý và sử dụng, chủ yếu gồm hai EC2 instance, hai EBS volume và các chỉ số hoặc cảnh báo CloudWatch liên quan.
 
-<!-- IMAGE_PATH: /images/2-Proposal/aws-cost-estimate.png -->
-<!-- Sau khi thêm file, bỏ comment dòng Markdown sau: ![Ước tính chi phí AWS](/images/2-Proposal/aws-cost-estimate.png) -->
+Đối với NAT Gateway, dự toán sử dụng đơn giá giả định tại Region Singapore là **0,059 USD mỗi giờ** và **0,059 USD cho mỗi GB dữ liệu được xử lý**. Với 730 giờ hoạt động mỗi tháng, chi phí NAT Gateway được tính theo ba mức sử dụng:
 
-## 11. Kết quả mong đợi
+* Mức tối thiểu: 1 GB dữ liệu xử lý.
+* Mức trung bình: 5 GB dữ liệu xử lý.
+* Mức tối đa giả định: 20 GB dữ liệu xử lý.
 
-Sản phẩm có thể truy cập qua `https://cloud-ewallet.com`; frontend được phân phối bởi CloudFront/S3; API đi qua CloudFront/ALB đến Spring Boot container; backend kết nối RDS và gửi email bằng Amazon SES SMTP. Các workflow chính được kiểm thử và giới hạn kiến trúc được trình bày trung thực.
+Đơn giá và kết quả dự toán cần được kiểm tra lại bằng AWS Pricing Calculator tại thời điểm triển khai do giá dịch vụ có thể thay đổi theo Region và thời gian.
 
+Tổng chi phí hệ thống được chia thành ba kịch bản:
 
+* **Mức tối thiểu – 117,53 USD/tháng:** hai EC2 backend được duy trì liên tục, lưu lượng phục vụ demo ở mức thấp, CloudWatch chủ yếu sử dụng các metrics cơ bản và AWS WAF hoạt động trong phạm vi request giả định.
+* **Mức trung bình – 122,92 USD/tháng:** giữ nguyên cấu hình compute và database, nhưng mức sử dụng ALB LCU, data transfer, request, email và dữ liệu giám sát tăng do hệ thống được sử dụng thường xuyên hơn.
+* **Mức tối đa giả định – 140,01 USD/tháng:** vẫn duy trì tối đa hai EC2 backend nhưng giả định mức sử dụng ALB LCU, Amazon S3, Amazon CloudFront, Amazon SES và Amazon CloudWatch cao hơn trong phạm vi đã xác định trong bảng dự toán.
+
+Dự toán trên chưa bao gồm thuế, các ưu đãi từ AWS Free Tier, snapshot và backup phát sinh, data transfer vượt ngoài giả định cũng như các tài nguyên không được liệt kê trong bảng. Chi phí thực tế có thể thay đổi tùy theo thời điểm, Region triển khai và mức sử dụng thực tế của hệ thống.
+
+## 8. Đánh giá rủi ro và chiến lược giảm thiểu
+
+| Rủi ro | Chiến lược giảm thiểu |
+| --- | --- |
+| Một EC2 hoặc một AZ gặp lỗi | ALB chỉ chuyển request đến target healthy; ASG duy trì desired capacity và tạo instance thay thế. |
+| Instance bootstrap thất bại | Chuẩn hóa Launch Template, User Data và cấu hình Docker restart; dùng ALB health check để không đưa target lỗi vào phục vụ. |
+| Scale-in hoặc thay instance làm gián đoạn request | Sử dụng ALB deregistration delay/connection draining trước khi target bị loại. |
+| RDS Single-AZ là điểm lỗi đơn tại tầng dữ liệu | Duy trì backup, snapshot và kiểm tra khả năng khôi phục dữ liệu định kỳ. |
+| WAF tạo false positive | Đặt các rule nhạy cảm ở Count trước, theo dõi sampled requests rồi mới quyết định chuyển sang Block. |
+| Chi phí WAF tăng | Theo dõi số request, rule, logging và các tính năng trả phí được bật. |
+| NAT Gateway hoặc route outbound gặp lỗi | Kiểm tra route của private subnet, trạng thái NAT Gateway và Internet Gateway; tránh đưa NAT vào inbound request path. |
+| Một NAT Gateway tạo điểm phụ thuộc cho outbound của hai AZ | Theo dõi trạng thái NAT Gateway, route table và cảnh báo kết nối để phát hiện sự cố sớm. |
+| EC2 mới thiếu secret hoặc biến môi trường | Chuẩn hóa Launch Template/User Data và kiểm tra cấu hình runtime trước khi target được đưa vào phục vụ. |
+| Chi phí compute ngoài dự kiến | Giới hạn ASG `Max = 2` và theo dõi AWS Billing/Cost Explorer. |
+| Sai lệch số dư khi giao dịch đồng thời | Dùng database transaction, ACID và row-level locking. |
+| SES bounce, complaint hoặc vượt quota | Theo dõi sending statistics, bounce/complaint và giới hạn gửi của SES. |
+
+## 9. Kết quả đạt được
+
+- Frontend tĩnh được phân phối qua S3 và CloudFront bằng HTTPS.
+- WAF kiểm tra request tại edge bằng Core Rule Set với sự kết hợp giữa Block và Count.
+- ALB, Target Group và ASG cải thiện availability của backend; hai EC2 hoạt động tại hai Availability Zone.
+- Thiết kế Security Group giới hạn luồng CloudFront/Internet → ALB → EC2:8080 → RDS:3306; EC2 backend không nhận traffic ứng dụng trực tiếp từ Internet.
+- RDS MySQL cung cấp dữ liệu nhất quán nhưng Single-AZ vẫn là giới hạn availability hiện tại.
+- SES hỗ trợ các email giao dịch theo từng người dùng; CloudWatch hỗ trợ theo dõi metrics và tình trạng hệ thống.
+- Kiến trúc đạt sự cân bằng phù hợp với phạm vi dự án giữa security, availability và cost optimization, nhưng không được xem là HA end-to-end.
