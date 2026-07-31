@@ -1,0 +1,6 @@
+{{- $src := .Destination -}}
+{{- /* Rewrite root-absolute /images/... paths so they include the site base path (e.g. /Cloud-based-e-wallet/) on subpath deployments. */ -}}
+{{- if and (hasPrefix $src "/") (not (hasPrefix $src "//")) -}}
+  {{- $src = strings.TrimPrefix "/" $src | absURL -}}
+{{- end -}}
+<img src="{{ $src }}" alt="{{ .Text }}"{{ with .Title }} title="{{ . }}"{{ end }}>
