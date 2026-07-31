@@ -15,53 +15,26 @@ reportHeadings:
   - Week 1 Achievements
 reportType: worklog
 ---
-{{% notice warning %}} 
-⚠️ **Note:** The following information is for reference purposes only. Please **do not copy verbatim** for your own report, including this warning.
-{{% /notice %}}
-
-
 ### Week 1 Objectives:
 
-* Connect and get acquainted with members of First Cloud AI Journey.
-* Understand basic AWS services, how to use the console & CLI.
+* Set up local development environment for a full-stack project.
+* Initialize the Spring Boot backend and React frontend scaffolding.
+* Design the relational database schema for the E-Wallet system.
 
 ### Tasks to be carried out this week:
-| Day | Task                                                                                                                                                                                                   | Start Date | Completion Date | Reference Material                        |
-| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------- | --------------- | ----------------------------------------- |
-| 2   | - Get acquainted with FCAJ members <br> - Read and take note of internship unit rules and regulations                                                                                                   | 08/11/2025 | 08/11/2025      |
-| 3   | - Learn about AWS and its types of services <br>&emsp; + Compute <br>&emsp; + Storage <br>&emsp; + Networking <br>&emsp; + Database <br>&emsp; + ... <br>                                              | 08/12/2025 | 08/12/2025      | <https://cloudjourney.awsstudygroup.com/> |
-| 4   | - Create AWS Free Tier account <br> - Learn about AWS Console & AWS CLI <br> - **Practice:** <br>&emsp; + Create AWS account <br>&emsp; + Install & configure AWS CLI <br> &emsp; + How to use AWS CLI | 08/13/2025 | 08/13/2025      | <https://cloudjourney.awsstudygroup.com/> |
-| 5   | - Learn basic EC2: <br>&emsp; + Instance types <br>&emsp; + AMI <br>&emsp; + EBS <br>&emsp; + ... <br> - SSH connection methods to EC2 <br> - Learn about Elastic IP   <br>                            | 08/14/2025 | 08/15/2025      | <https://cloudjourney.awsstudygroup.com/> |
-| 6   | - **Practice:** <br>&emsp; + Launch an EC2 instance <br>&emsp; + Connect via SSH <br>&emsp; + Attach an EBS volume                                                                                     | 08/15/2025 | 08/15/2025      | <https://cloudjourney.awsstudygroup.com/> |
-
+| Day | Task | Start Date | Completion Date |
+| --- | ---- | ---------- | --------------- |
+| 1   | Install JDK 17, Maven, Node.js, and Docker Desktop | 08/06 | 08/06 |
+| 2   | Create `docker-compose.yml` for MySQL 8 (port 3307) and phpMyAdmin (port 8081) | 08/06 | 08/06 |
+| 3   | Design core database schema: `users`, `user_profiles`, `admin_profiles`, `wallets`, `services`, `transactions`, `account_tokens` | 09/06 | 13/06 |
+| 4   | Initialize Spring Boot 17 project with Spring Data JPA, SecurityConfig (JWT + BCrypt) | 09/06 | 10/06 |
+| 5   | Build basic Register/Login API endpoints | 09/06 | 12/06 |
+| 6   | Initialize React 19 + Vite + TypeScript project with React Router, Axios, Zustand | 10/06 | 12/06 |
+| 7   | Build basic UI for Login and Register pages | 10/06 | 13/06 |
 
 ### Week 1 Achievements:
 
-* Understood what AWS is and mastered the basic service groups: 
-  * Compute
-  * Storage
-  * Networking 
-  * Database
-  * ...
-
-* Successfully created and configured an AWS Free Tier account.
-
-* Became familiar with the AWS Management Console and learned how to find, access, and use services via the web interface.
-
-* Installed and configured AWS CLI on the computer, including:
-  * Access Key
-  * Secret Key
-  * Default Region
-  * ...
-
-* Used AWS CLI to perform basic operations such as:
-
-  * Check account & configuration information
-  * Retrieve the list of regions
-  * View EC2 service
-  * Create and manage key pairs
-  * Check information about running services
-  * ...
-
-* Acquired the ability to connect between the web interface and CLI to manage AWS resources in parallel.
-* ...
+* Successfully set up local development environment with Docker Compose.
+* Completed basic authentication flow (Register/Login) with JWT.
+* Designed and created the relational database schema.
+* Frontend scaffolding with routing and state management ready.

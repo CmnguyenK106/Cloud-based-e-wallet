@@ -10,55 +10,28 @@ reportTableColumns:
   - Ngày hoàn thành
 reportType: worklog
 ---
-{{% notice warning %}}
-⚠️ **Lưu ý:** Các thông tin dưới đây chỉ nhằm mục đích tham khảo, vui lòng **không sao chép nguyên văn** cho bài báo cáo của bạn kể cả warning này.
-{{% /notice %}}
-
-
 ### Mục tiêu tuần 1:
 
-* Kết nối, làm quen với các thành viên trong First Cloud AI Journey.
-* Hiểu dịch vụ AWS cơ bản, cách dùng console & CLI.
+* Thiết lập môi trường phát triển local cho dự án Full-stack.
+* Khởi tạo khung ứng dụng Spring Boot backend và React frontend.
+* Thiết kế sơ đồ cơ sở dữ liệu quan hệ cho hệ thống Ví điện tử.
 
 ### Các công việc cần triển khai trong tuần này:
-| Thứ | Công việc                                                                                                                                                                                   | Ngày bắt đầu | Ngày hoàn thành | Nguồn tài liệu                            |
-| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------ | --------------- | ----------------------------------------- |
-| 2   | - Làm quen với các thành viên FCAJ <br> - Đọc và lưu ý các nội quy, quy định tại đơn vị thực tập                                                                                             | 11/08/2025   | 11/08/2025      |
-| 3   | - Tìm hiểu AWS và các loại dịch vụ <br>&emsp; + Compute <br>&emsp; + Storage <br>&emsp; + Networking <br>&emsp; + Database <br>&emsp; + ... <br>                                            | 12/08/2025   | 12/08/2025      | <https://cloudjourney.awsstudygroup.com/> |
-| 4   | - Tạo AWS Free Tier account <br> - Tìm hiểu AWS Console & AWS CLI <br> - **Thực hành:** <br>&emsp; + Tạo AWS account <br>&emsp; + Cài AWS CLI & cấu hình <br> &emsp; + Cách sử dụng AWS CLI | 13/08/2025   | 13/08/2025      | <https://cloudjourney.awsstudygroup.com/> |
-| 5   | - Tìm hiểu EC2 cơ bản: <br>&emsp; + Instance types <br>&emsp; + AMI <br>&emsp; + EBS <br>&emsp; + ... <br> - Các cách remote SSH vào EC2 <br> - Tìm hiểu Elastic IP   <br>                  | 14/08/2025   | 15/08/2025      | <https://cloudjourney.awsstudygroup.com/> |
-| 6   | - **Thực hành:** <br>&emsp; + Tạo EC2 instance <br>&emsp; + Kết nối SSH <br>&emsp; + Gắn EBS volume                                                                                         | 15/08/2025   | 15/08/2025      | <https://cloudjourney.awsstudygroup.com/> |
+| Thứ | Công việc | Ngày bắt đầu | Ngày hoàn thành |
+| --- | --------- | ------------ | --------------- |
+| 1   | Cài đặt JDK 17, Maven, Node.js và Docker Desktop | 08/06 | 08/06 |
+| 2   | Tạo `docker-compose.yml` cho MySQL 8 (cổng 3307) và phpMyAdmin (cổng 8081) | 08/06 | 08/06 |
+| 3   | Thiết kế schema CSDL: `users`, `user_profiles`, `admin_profiles`, `wallets`, `services`, `transactions`, `account_tokens` | 09/06 | 13/06 |
+| 4   | Khởi tạo dự án Spring Boot 17 với Spring Data JPA, SecurityConfig (JWT + BCrypt) | 09/06 | 10/06 |
+| 5   | Xây dựng API Đăng ký/Đăng nhập cơ bản | 09/06 | 12/06 |
+| 6   | Khởi tạo dự án React 19 + Vite + TypeScript với React Router, Axios, Zustand | 10/06 | 12/06 |
+| 7   | Dựng giao diện cơ bản cho trang Login và Register | 10/06 | 13/06 |
 
+### Kết quả đạt được:
 
-### Kết quả đạt được tuần 1:
-
-* Hiểu AWS là gì và nắm được các nhóm dịch vụ cơ bản: 
-  * Compute
-  * Storage
-  * Networking 
-  * Database
-  * ...
-
-* Đã tạo và cấu hình AWS Free Tier account thành công.
-
-* Làm quen với AWS Management Console và biết cách tìm, truy cập, sử dụng dịch vụ từ giao diện web.
-
-* Cài đặt và cấu hình AWS CLI trên máy tính bao gồm:
-  * Access Key
-  * Secret Key
-  * Region mặc định
-  * ...
-
-* Sử dụng AWS CLI để thực hiện các thao tác cơ bản như:
-
-  * Kiểm tra thông tin tài khoản & cấu hình
-  * Lấy danh sách region
-  * Xem dịch vụ EC2
-  * Tạo và quản lý key pair
-  * Kiểm tra thông tin dịch vụ đang chạy
-  * ...
-
-* Có khả năng kết nối giữa giao diện web và CLI để quản lý tài nguyên AWS song song.
-* ...
+* Thiết lập thành công môi trường local với Docker Compose.
+* Hoàn thành luồng xác thực cơ bản (Đăng ký/Đăng nhập) với JWT.
+* Thiết kế và tạo schema cơ sở dữ liệu quan hệ.
+* Khung frontend với routing và state management sẵn sàng.
 
 

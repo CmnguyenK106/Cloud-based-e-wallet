@@ -4,29 +4,26 @@ date: 2024-01-01
 weight: 5
 chapter: false
 pre: " <b> 5. </b> "
-includeInReport: false
 ---
-{{% notice warning %}}
-⚠️ **Note:** The information below is for reference purposes only. Please **do not copy verbatim** for your report, including this warning.
-{{% /notice %}}
 
-# Secure Hybrid Access to S3 using VPC Endpoints
+This section documents how our team deployed Cloud E-Wallet from source to the AWS production environment. The steps follow the dependencies among the database, backend, frontend, routing, and validation, and describe only components verified in the project.
 
-#### Overview
+![Cloud E-Wallet deployment architecture on AWS](/images/5-Workshop/5.1-Prerequisites/architecture.png)
 
-**AWS PrivateLink** provides private connectivity to AWS services from VPCs and your on-premises networks, without exposing your traffic to the Public Internet.
+<p style="text-align: center;"><em>Figure 5.1. Cloud E-Wallet deployment architecture on AWS.</em></p>
 
-In this lab, you will learn how to create, configure, and test VPC endpoints that enable your workloads to reach AWS services without traversing the Public Internet.
+In this architecture, users access a Cloudflare-managed domain and requests reach CloudFront. The default behavior serves the React frontend from Amazon S3, while `/api/*` travels through the Application Load Balancer to the Spring Boot container on EC2. The backend connects to Amazon RDS for MySQL and uses Amazon SES SMTP for verification and password-reset email.
 
-You will create two types of endpoints to access Amazon S3: a Gateway VPC endpoint, and an Interface VPC endpoint. These two types of VPC endpoints offer different benefits depending on if you are accessing Amazon S3 from the cloud or your on-premises location
-+ **Gateway** - Create a gateway endpoint to send traffic to Amazon S3 or DynamoDB using private IP addresses.You route traffic from your VPC to the gateway endpoint using route tables.
-+ **Interface** - Create an interface endpoint to send traffic to endpoint services that use a Network Load Balancer to distribute traffic. Traffic destined for the endpoint service is resolved using DNS.
+Cloud E-Wallet uses simulated balances, does not process real money, does not connect to a payment gateway, and does not send card data to the backend.
 
-#### Content
+## Procedure
 
-1. [Workshop overview](5.1-Workshop-overview)
-2. [Prerequiste](5.2-Prerequiste/)
-3. [Access S3 from VPC](5.3-S3-vpc/)
-4. [Access S3 from On-premises](5.4-S3-onprem/)
-5. [VPC Endpoint Policies (Bonus)](5.5-Policy/)
-6. [Clean up](5.6-Cleanup/)
+| Step | Main work | Expected outcome |
+| --- | --- | --- |
+| [5.1. Prepare the environment](5.1-Prerequisites/) | Verify tools and source; identify the two IAM users and configure the frontend, backend, RDS, JWT, CORS, and Amazon SES configuration | Deployment environment is ready in the correct Region with no exposed secrets |
+| [5.2. Deploy the database](5.2-Database-deployment/) | Configure private RDS, then initialize the schema and baseline data | The production database is ready for the backend |
+| [5.3. Deploy the backend](5.3-Backend-deployment/) | Prepare EC2/Docker/SES, build the image, and release the Spring Boot container | The backend connects to RDS, sends email, and serves traffic through the ALB |
+| [5.4. Deploy the frontend](5.4-Frontend-deployment/) | Configure S3/CloudFront, build React, and release the static files | The frontend is delivered over HTTPS through CloudFront or the custom domain |
+| [5.5. Configure routing and security](5.5-Traffic-security/) | Create the target group and ALB; configure CloudFront `/api/*`, Cloudflare DNS, and security groups | Traffic follows CloudFront → ALB → EC2 without unnecessary direct exposure of EC2 or RDS |
+| [5.6. Validate the deployment](5.6-Validation/) | Confirm backend health, sign-in, wallet information, money transfer, and password-reset email through Amazon SES | Primary production workflows operate end to end |
+| [5.7. Clean up resources](5.7-Cleanup/) | Back up required data, verify dependencies, and stop or delete unused resources | Post-demo charges are reduced |

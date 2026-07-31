@@ -4,113 +4,183 @@ date: 2024-01-01
 weight: 2
 chapter: false
 pre: " <b> 2. </b> "
-includeInReport: false
 ---
-{{% notice warning %}}
-⚠️ **Note:** The information below is for reference purposes only. Please **do not copy verbatim** for your report, including this warning.
-{{% /notice %}}
 
-In this section, you need to summarize the contents of the workshop that you **plan** to conduct.
 
-# IoT Weather Platform for Lab Research
-## A Unified AWS Serverless Solution for Real-Time Weather Monitoring
+# Cloud E-Wallet – A simulated e-wallet application deployed on AWS
 
-### 1. Executive Summary
-The IoT Weather Platform is designed for the ITea Lab team in Ho Chi Minh City to enhance weather data collection and analysis. It supports up to 5 weather stations, with potential scalability to 10-15, utilizing Raspberry Pi edge devices with ESP32 sensors to transmit data via MQTT. The platform leverages AWS Serverless services to deliver real-time monitoring, predictive analytics, and cost efficiency, with access restricted to 5 lab members via Amazon Cognito.
 
-### 2. Problem Statement
-### What’s the Problem?
-Current weather stations require manual data collection, becoming unmanageable with multiple units. There is no centralized system for real-time data or analytics, and third-party platforms are costly and overly complex.
+## 1. Executive summary
 
-### The Solution
-The platform uses AWS IoT Core to ingest MQTT data, AWS Lambda and API Gateway for processing, Amazon S3 for storage (including a data lake), and AWS Glue Crawlers and ETL jobs to extract, transform, and load data from the S3 data lake to another S3 bucket for analysis. AWS Amplify with Next.js provides the web interface, and Amazon Cognito ensures secure access. Similar to Thingsboard and CoreIoT, users can register new devices and manage connections, though this platform operates on a smaller scale and is designed for private use. Key features include real-time dashboards, trend analysis, and low operational costs.
+Our team proposes **Cloud E-Wallet**, a web application that simulates essential e-wallet operations and is deployed on AWS. Customers can practice account registration, email verification, profile management, balance viewing, simulated deposits, transfers, service payments, and transaction-history review. Administrators can monitor the application and manage users, transactions, and services.
 
-### Benefits and Return on Investment
-The solution establishes a foundational resource for lab members to develop a larger IoT platform, serving as a study resource, and provides a data foundation for AI enthusiasts for model training or analysis. It reduces manual reporting for each station via a centralized platform, simplifying management and maintenance, and improves data reliability. Monthly costs are $0.66 USD per the AWS Pricing Calculator, with a 12-month total of $7.92 USD. All IoT equipment costs are covered by the existing weather station setup, eliminating additional development expenses. The break-even period of 6-12 months is achieved through significant time savings from reduced manual work.
+The project is for learning and technical demonstration. It does not process real money, connect to a real bank or payment gateway, or store card information.
 
-### 3. Solution Architecture
-The platform employs a serverless AWS architecture to manage data from 5 Raspberry Pi-based stations, scalable to 15. Data is ingested via AWS IoT Core, stored in an S3 data lake, and processed by AWS Glue Crawlers and ETL jobs to transform and load it into another S3 bucket for analysis. Lambda and API Gateway handle additional processing, while Amplify with Next.js hosts the dashboard, secured by Cognito. The architecture is detailed below:
+## 2. Problem statement
 
-![IoT Weather Station Architecture](/images/2-Proposal/edge_architecture.jpeg)
+Even a simulated e-wallet must address secure authentication, customer/administrator authorization, consistent balance updates, transaction history, responsive UI, and cloud deployment.
 
-![IoT Weather Platform Architecture](/images/2-Proposal/platform_architecture.jpeg)
+A local-only application cannot fully demonstrate production routing, domain/HTTPS configuration, separation of frontend/backend/database, network controls, health checks, and email delivery. The project therefore needs an AWS architecture that supports end-to-end deployment while remaining appropriate for an internship scope.
 
-### AWS Services Used
-- **AWS IoT Core**: Ingests MQTT data from 5 stations, scalable to 15.
-- **AWS Lambda**: Processes data and triggers Glue jobs (two functions).
-- **Amazon API Gateway**: Facilitates web app communication.
-- **Amazon S3**: Stores raw data in a data lake and processed outputs (two buckets).
-- **AWS Glue**: Crawlers catalog data, and ETL jobs transform and load it.
-- **AWS Amplify**: Hosts the Next.js web interface.
-- **Amazon Cognito**: Secures access for lab users.
+## 3. Proposed solution
 
-### Component Design
-- **Edge Devices**: Raspberry Pi collects and filters sensor data, sending it to IoT Core.
-- **Data Ingestion**: AWS IoT Core receives MQTT messages from the edge devices.
-- **Data Storage**: Raw data is stored in an S3 data lake; processed data is stored in another S3 bucket.
-- **Data Processing**: AWS Glue Crawlers catalog the data, and ETL jobs transform it for analysis.
-- **Web Interface**: AWS Amplify hosts a Next.js app for real-time dashboards and analytics.
-- **User Management**: Amazon Cognito manages user access, allowing up to 5 active accounts.
+- React 19, TypeScript, and Vite frontend.
+- Java 17, Spring Boot, Spring Security, and JDBC REST API.
+- MySQL for users, tokens, wallets, services, and transactions.
+- BCrypt, signed expiring JWTs, and `user`/`admin` roles.
+- Database transactions and wallet-row locking for balance safety.
+- Amazon S3 and CloudFront for frontend delivery.
+- Application Load Balancer and EC2 for the Dockerized backend.
+- Amazon RDS MySQL in private subnets.
+- Amazon SES SMTP in Singapore (`ap-southeast-1`) with STARTTLS for verification and password-reset email; Resend is retained as a rollback provider.
+- Cloudflare DNS for the domain and email-verification records.
 
-### 4. Technical Implementation
-**Implementation Phases**
-This project has two parts—setting up weather edge stations and building the weather platform—each following 4 phases:
-- Build Theory and Draw Architecture: Research Raspberry Pi setup with ESP32 sensors and design the AWS serverless architecture (1 month pre-internship)
-- Calculate Price and Check Practicality: Use AWS Pricing Calculator to estimate costs and adjust if needed (Month 1).
-- Fix Architecture for Cost or Solution Fit: Tweak the design (e.g., optimize Lambda with Next.js) to stay cost-effective and usable (Month 2).
-- Develop, Test, and Deploy: Code the Raspberry Pi setup, AWS services with CDK/SDK, and Next.js app, then test and release to production (Months 2-3).
+## 4. Solution architecture
 
-**Technical Requirements**
-- Weather Edge Station: Sensors (temperature, humidity, rainfall, wind speed), a microcontroller (ESP32), and a Raspberry Pi as the edge device. Raspberry Pi runs Raspbian, handles Docker for filtering, and sends 1 MB/day per station via MQTT over Wi-Fi.
-- Weather Platform: Practical knowledge of AWS Amplify (hosting Next.js), Lambda (minimal use due to Next.js), AWS Glue (ETL), S3 (two buckets), IoT Core (gateway and rules), and Cognito (5 users). Use AWS CDK/SDK to code interactions (e.g., IoT Core rules to S3). Next.js reduces Lambda workload for the fullstack web app.
+The proposed flow, subsequently applied by the project, is:
 
-### 5. Timeline & Milestones
-**Project Timeline**
-- Pre-Internship (Month 0): 1 month for planning and old station review.
-- Internship (Months 1-3): 3 months.
-    - Month 1: Study AWS and upgrade hardware.
-    - Month 2: Design and adjust architecture.
-    - Month 3: Implement, test, and launch.
-- Post-Launch: Up to 1 year for research.
+```text
+Users → Cloudflare DNS → Amazon CloudFront
+                              ├─ Default (*) → S3 frontend
+                              └─ /api/* → ALB → EC2/Docker/Spring Boot
+                                                   ├─ RDS MySQL
+                                                   └─ Amazon SES SMTP
+```
 
-### 6. Budget Estimation
-You can find the budget estimation on the [AWS Pricing Calculator](https://calculator.aws/#/estimate?id=621f38b12a1ef026842ba2ddfe46ff936ed4ab01).  
-Or you can download the [Budget Estimation File](../attachments/budget_estimation.pdf).
+> **Image required:** Team architecture diagram showing User, Cloudflare, CloudFront, S3, ALB, EC2, RDS, Internet Gateway, Amazon SES, and CloudWatch.
 
-### Infrastructure Costs
-- AWS Services:
-    - AWS Lambda: $0.00/month (1,000 requests, 512 MB storage).
-    - S3 Standard: $0.15/month (6 GB, 2,100 requests, 1 GB scanned).
-    - Data Transfer: $0.02/month (1 GB inbound, 1 GB outbound).
-    - AWS Amplify: $0.35/month (256 MB, 500 ms requests).
-    - Amazon API Gateway: $0.01/month (2,000 requests).
-    - AWS Glue ETL Jobs: $0.02/month (2 DPUs).
-    - AWS Glue Crawlers: $0.07/month (1 crawler).
-    - MQTT (IoT Core): $0.08/month (5 devices, 45,000 messages).
+<!-- IMAGE_PATH: /images/2-Proposal/cloud-ewallet-architecture.png -->
+<!-- After adding the file, uncomment: ![Cloud E-Wallet architecture](/images/2-Proposal/cloud-ewallet-architecture.png) -->
 
-Total: $0.7/month, $8.40/12 months
+| Component | Responsibility |
+| --- | --- |
+| Cloudflare DNS | Manages `cloud-ewallet.com` and sender-domain records |
+| CloudFront | Browser HTTPS and routing for frontend and `/api/*` |
+| S3 | Stores the React static build |
+| ALB | Forwards APIs and checks backend health |
+| EC2 | Runs Spring Boot in Docker |
+| RDS MySQL | Stores data in private subnets |
+| Amazon SES SMTP | Sends verification and reset email over authenticated STARTTLS on port `587` |
+| CloudWatch | AWS metrics; custom logs/alarms require live configuration evidence |
 
-- Hardware: $265 one-time (Raspberry Pi 5 and sensors).
+## 5. Technical implementation
 
-### 7. Risk Assessment
-#### Risk Matrix
-- Network Outages: Medium impact, medium probability.
-- Sensor Failures: High impact, low probability.
-- Cost Overruns: Medium impact, low probability.
+### Implementation stages
 
-#### Mitigation Strategies
-- Network: Local storage on Raspberry Pi with Docker.
-- Sensors: Regular checks and spares.
-- Cost: AWS budget alerts and optimization.
+Our team delivered the project through five stages:
 
-#### Contingency Plans
-- Revert to manual methods if AWS fails.
-- Use CloudFormation for cost-related rollbacks.
+1. **Research and design:** Analyze requirements, define the simulated-wallet scope, and design the database and frontend–backend–AWS architecture.
+2. **Local development:** Build the React frontend, Spring Boot REST API, and MySQL database; implement authentication, authorization, wallet workflows, and administration.
+3. **Containerization and cloud preparation:** Validate frontend/backend builds, containerize Spring Boot, create the VPC, subnets, security groups, and prepare RDS.
+4. **Deployment and integration:** Deploy the frontend to S3/CloudFront, run the backend container on EC2 behind the ALB, connect RDS, and configure Cloudflare DNS and Amazon SES SMTP.
+5. **Validation and completion:** Perform health checks, business smoke tests, email testing, network-security review, cost monitoring, and report completion.
 
-### 8. Expected Outcomes
-#### Technical Improvements: 
-Real-time data and analytics replace manual processes.  
-Scalable to 10-15 stations.
-#### Long-term Value
-1-year data foundation for AI research.  
-Reusable for future projects.
+### Technical requirements
+
+- **Frontend:** React 19, TypeScript, and Vite; static build hosted on S3, delivered by CloudFront, with responsive layouts.
+- **Backend:** Java 17, Spring Boot, Spring Security, JDBC, and Actuator; Dockerized on EC2 port `8080`, accepting application traffic only from the ALB.
+- **Database:** Amazon RDS for MySQL in private subnets; its security group permits port `3306` only from backend EC2; Vietnamese data uses `utf8mb4`.
+- **Email:** Amazon SES SMTP in `ap-southeast-1`, port `587`, authentication, and STARTTLS; domain identity/DKIM verified through Cloudflare.
+- **Security:** BCrypt, expiring JWTs, `user`/`admin` roles, secrets outside Git, HTTPS from users to CloudFront, and restricted security-group ingress.
+- **Operations:** The ALB checks `/actuator/health`; CloudWatch provides AWS metrics; frontend and backend deployments are currently manual.
+## 6. Functional scope
+
+### Customer
+
+Registration, verification/resend, login/logout, forgot/reset password, profile and balance, simulated deposit, recipient lookup, transfer, service payment, and transaction history.
+
+### Administrator
+
+Dashboard, user listing and block/unblock, transaction review, and service creation/editing/activation/deactivation.
+
+### Out of scope
+
+Real money, KYC, real OTP/SMS, payment gateways, ECS/Fargate, Auto Scaling, and CI/CD are outside the initial proposal. The ALB has one EC2 target, so the system does not provide full high availability.
+
+## 7. Expected benefits
+
+- An end-to-end full-stack and AWS learning product.
+- Clear separation of UI, API, and database.
+- Authentication, authorization, and transactional balance processing.
+- Responsive UI and UTF-8 Vietnamese content.
+- A foundation for future ECS, CI/CD, Auto Scaling, WAF, and stronger monitoring research.
+
+## 8. Implementation plan
+
+| Phase | Work |
+| --- | --- |
+| Weeks 1–2 | Requirements, architecture, database design, and project setup |
+| Weeks 3–5 | Authentication, wallet workflows, customer UI, and administration |
+| Week 6 | Testing, defect fixes, and backend containerization |
+| Weeks 7–8 | S3, CloudFront, EC2, RDS, Amazon SES, ALB, and production checks |
+| Week 9 | Product, documentation, and report completion |
+| Weeks 10–11 | ECS and CI/CD research as future work, not production implementation |
+
+## 9. Risks and mitigations
+
+| Risk | Impact | Mitigation |
+| --- | --- | --- |
+| Secret exposure | High | Separate environment files, placeholders, no committed real values |
+| Incorrect balances | High | Transactions, validation, and wallet-row locking |
+| Backend outage | High | ALB health check; document one-target limitation and roadmap |
+| AWS cost | Medium | Billing/Cost Explorer review and resource cleanup |
+| Email failure | Medium | Verify the SES domain, sandbox status, STARTTLS, SMTP credentials, bounces, and complaints |
+
+## 10. Cost
+
+The following figures are **estimates**, not an actual invoice. Our team assumes resources in Singapore (`ap-southeast-1`), On-Demand pricing, 730 operating hours per month, and excludes tax and Free Tier benefits. The maximum is only an upper bound within this report's assumptions; AWS does not cap spending if traffic or resources continue to grow.
+
+### Initial cost
+
+| Cost item | Cost |
+| --- | ---: |
+| Purchase of `cloud-ewallet.com` through Cloudflare | **USD 10.98** |
+| AWS service setup fees | **USD 0.00** |
+| **Total one-time initial cost** | **USD 10.98** |
+
+The domain is recorded as an initial purchase at the amount actually paid by the team and is **not amortized into monthly operating costs** below. A future renewal fee is excluded because no actual renewal price is available yet.
+
+### Usage assumptions
+
+| Item | Minimum | Average | Assumed maximum |
+| --- | --- | --- | --- |
+| EC2 and EBS | One `t3.micro`, 730 hours, 8 GB gp3 | Same as minimum | Same as minimum |
+| RDS MySQL | One Single-AZ `db.t3.micro`, 20 GB | Same as minimum | Same as minimum |
+| ALB | 730 hours, average 0.1 LCU | 730 hours, average 0.3 LCU | 730 hours, average 1 LCU |
+| S3 | 1 GB and few requests | 5 GB, about 30,000 GET and 3,000 PUT requests | 20 GB, about 100,000 GET and 10,000 PUT requests |
+| CloudFront | 5 GB and about 50,000 requests | 30 GB and about 250,000 requests | 100 GB and about 1,000,000 requests |
+| Amazon SES | 1,000 text emails/month | 3,000 text emails/month | 10,000 text emails/month |
+| CloudWatch | Basic metrics only | 1 GB of log ingestion | 5 GB of log ingestion |
+
+### Monthly operating cost
+
+| Service | Minimum (USD) | Average (USD) | Assumed maximum (USD) |
+| --- | ---: | ---: | ---: |
+| EC2 `t3.micro` | 9.64 | 9.64 | 9.64 |
+| 8 GB gp3 EBS | 0.80 | 0.80 | 0.80 |
+| RDS MySQL `db.t3.micro` + 20 GB | 21.74 | 21.74 | 21.74 |
+| Application Load Balancer + LCU | 18.98 | 20.15 | 24.24 |
+| S3 storage and requests | 0.03 | 0.15 | 0.70 |
+| CloudFront transfer and requests | 0.61 | 3.65 | 12.10 |
+| Amazon SES | 0.16 | 0.48 | 1.60 |
+| CloudWatch | 0.00 | 0.50 | 2.50 |
+| **Estimated monthly operating total** | **51.96** | **57.11** | **73.32** |
+| **First-month total including domain purchase** | **62.94** | **68.09** | **84.30** |
+
+### Conditions for each cost level
+
+- **Minimum – USD 51.96/month:** The demo runs continuously with one EC2 `t3.micro`, one Single-AZ RDS `db.t3.micro`, and one ALB; up to about 1 GB on S3, 5 GB through CloudFront, 1,000 SES emails, and basic CloudWatch metrics only. Free Tier, tax, snapshots, and resources outside the table are excluded.
+- **Average – USD 57.11/month:** Compute and database sizing remains unchanged, with more regular usage: about 5 GB on S3, 30 GB through CloudFront, 3,000 SES emails, 1 GB of CloudWatch Logs, and an average 0.3 LCU. This represents periodic team testing and demonstrations.
+- **Assumed maximum – USD 73.32/month:** The system still uses one small EC2 and RDS instance, but usage rises to 20 GB on S3, 100 GB through CloudFront, 10,000 SES emails, 5 GB of logs, and an average 1 LCU. A larger EC2/RDS class, additional targets, Multi-AZ, NAT Gateway, WAF, or usage beyond these limits can exceed this figure.
+
+AWS prices vary by date, Region, account, and actual consumption. Before long-term operation, the team should enter the deployed configuration into AWS Pricing Calculator and compare it with Billing/Cost Explorer. References: [AWS EC2 Pricing](https://aws.amazon.com/ec2/pricing/on-demand/), [Amazon RDS for MySQL Pricing](https://aws.amazon.com/rds/mysql/pricing/), [Elastic Load Balancing Pricing](https://aws.amazon.com/elasticloadbalancing/pricing/), [Amazon CloudFront Pricing](https://aws.amazon.com/cloudfront/pricing/), [Amazon S3 Pricing](https://aws.amazon.com/s3/pricing/), and [Amazon SES Pricing](https://aws.amazon.com/ses/pricing/).
+> **Image required:** Redacted AWS Pricing Calculator estimate or Billing view.
+
+<!-- IMAGE_PATH: /images/2-Proposal/aws-cost-estimate.png -->
+<!-- After adding the file, uncomment: ![AWS cost estimate](/images/2-Proposal/aws-cost-estimate.png) -->
+
+## 11. Expected outcome
+
+The application is available at `https://cloud-ewallet.com`; CloudFront/S3 serves the frontend; CloudFront/ALB routes APIs to Spring Boot; the backend connects to RDS and sends email through Amazon SES SMTP. Main workflows are validated and architecture limitations are documented accurately.
+
+

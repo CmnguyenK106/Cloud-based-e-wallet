@@ -4,106 +4,192 @@ date: 2024-01-01
 weight: 2
 chapter: false
 pre: " <b> 2. </b> "
-includeInReport: false
 ---
-{{% notice warning %}}
-⚠️ **Lưu ý:** Các thông tin dưới đây chỉ nhằm mục đích tham khảo, vui lòng **không sao chép nguyên văn** cho bài báo cáo của bạn kể cả warning này.
-{{% /notice %}}
 
-Tại phần này, bạn cần tóm tắt các nội dung trong workshop mà bạn **dự tính** sẽ làm.
 
-# IoT Weather Platform for Lab Research  
-## Giải pháp AWS Serverless hợp nhất cho giám sát thời tiết thời gian thực  
+# Cloud E-Wallet – Ứng dụng ví điện tử mô phỏng triển khai trên AWS
 
-### 1. Tóm tắt điều hành  
-IoT Weather Platform được thiết kế dành cho nhóm *ITea Lab* tại TP. Hồ Chí Minh nhằm nâng cao khả năng thu thập và phân tích dữ liệu thời tiết. Nền tảng hỗ trợ tối đa 5 trạm thời tiết, có khả năng mở rộng lên 10–15 trạm, sử dụng thiết bị biên Raspberry Pi kết hợp cảm biến ESP32 để truyền dữ liệu qua MQTT. Nền tảng tận dụng các dịch vụ AWS Serverless để cung cấp giám sát thời gian thực, phân tích dự đoán và tiết kiệm chi phí, với quyền truy cập giới hạn cho 5 thành viên phòng lab thông qua Amazon Cognito.  
 
-### 2. Tuyên bố vấn đề  
-*Vấn đề hiện tại*  
-Các trạm thời tiết hiện tại yêu cầu thu thập dữ liệu thủ công, khó quản lý khi có nhiều trạm. Không có hệ thống tập trung cho dữ liệu hoặc phân tích thời gian thực, và các nền tảng bên thứ ba thường tốn kém và quá phức tạp.  
+## 1. Tóm tắt đề xuất
 
-*Giải pháp*  
-Nền tảng sử dụng AWS IoT Core để tiếp nhận dữ liệu MQTT, AWS Lambda và API Gateway để xử lý, Amazon S3 để lưu trữ (bao gồm data lake), và AWS Glue Crawlers cùng các tác vụ ETL để trích xuất, chuyển đổi, tải dữ liệu từ S3 data lake sang một S3 bucket khác để phân tích. AWS Amplify với Next.js cung cấp giao diện web, và Amazon Cognito đảm bảo quyền truy cập an toàn. Tương tự như Thingsboard và CoreIoT, người dùng có thể đăng ký thiết bị mới và quản lý kết nối, nhưng nền tảng này hoạt động ở quy mô nhỏ hơn và phục vụ mục đích sử dụng nội bộ. Các tính năng chính bao gồm bảng điều khiển thời gian thực, phân tích xu hướng và chi phí vận hành thấp.  
+Nhóm chúng em đề xuất xây dựng **Cloud E-Wallet**, một ứng dụng Web mô phỏng các nghiệp vụ cơ bản của ví điện tử và triển khai trên AWS. Hệ thống giúp người dùng thực hành đăng ký, xác minh email, quản lý tài khoản, theo dõi số dư, nạp tiền mô phỏng, chuyển tiền, thanh toán dịch vụ và xem lịch sử giao dịch. Quản trị viên có thể theo dõi tổng quan, quản lý người dùng, giao dịch và danh mục dịch vụ.
 
-*Lợi ích và hoàn vốn đầu tư (ROI)*  
-Giải pháp tạo nền tảng cơ bản để các thành viên phòng lab phát triển một nền tảng IoT lớn hơn, đồng thời cung cấp nguồn dữ liệu cho những người nghiên cứu AI phục vụ huấn luyện mô hình hoặc phân tích. Nền tảng giảm bớt báo cáo thủ công cho từng trạm thông qua hệ thống tập trung, đơn giản hóa quản lý và bảo trì, đồng thời cải thiện độ tin cậy dữ liệu. Chi phí hàng tháng ước tính 0,66 USD (theo AWS Pricing Calculator), tổng cộng 7,92 USD cho 12 tháng. Tất cả thiết bị IoT đã được trang bị từ hệ thống trạm thời tiết hiện tại, không phát sinh chi phí phát triển thêm. Thời gian hoàn vốn 6–12 tháng nhờ tiết kiệm đáng kể thời gian thao tác thủ công.  
+Dự án phục vụ học tập và trình diễn kỹ thuật, không xử lý tiền thật, không kết nối ngân hàng hoặc cổng thanh toán thật và không lưu dữ liệu thẻ.
 
-### 3. Kiến trúc giải pháp  
-Nền tảng áp dụng kiến trúc AWS Serverless để quản lý dữ liệu từ 5 trạm dựa trên Raspberry Pi, có thể mở rộng lên 15 trạm. Dữ liệu được tiếp nhận qua AWS IoT Core, lưu trữ trong S3 data lake và xử lý bởi AWS Glue Crawlers và ETL jobs để chuyển đổi và tải vào một S3 bucket khác cho mục đích phân tích. Lambda và API Gateway xử lý bổ sung, trong khi Amplify với Next.js cung cấp bảng điều khiển được bảo mật bởi Cognito.  
+## 2. Vấn đề
 
-![IoT Weather Station Architecture](/images/2-Proposal/edge_architecture.jpeg)
+Một ứng dụng ví điện tử dù ở mức mô phỏng vẫn cần giải quyết đồng thời nhiều yêu cầu: xác thực an toàn, phân quyền người dùng/quản trị viên, cập nhật số dư nhất quán, lưu lịch sử giao dịch, cung cấp giao diện responsive và triển khai các thành phần Web trên Cloud.
 
-![IoT Weather Platform Architecture](/images/2-Proposal/platform_architecture.jpeg)
+Nếu chỉ chạy local, nhóm khó đánh giá đầy đủ luồng truy cập production, cấu hình domain/HTTPS, tách frontend-backend-database, bảo mật mạng, health check và dịch vụ email. Vì vậy, dự án cần một kiến trúc AWS đủ rõ ràng để triển khai end-to-end nhưng vẫn phù hợp phạm vi thực tập.
 
-*Dịch vụ AWS sử dụng*  
-- *AWS IoT Core*: Tiếp nhận dữ liệu MQTT từ 5 trạm, mở rộng lên 15.  
-- *AWS Lambda*: Xử lý dữ liệu và kích hoạt Glue jobs (2 hàm).  
-- *Amazon API Gateway*: Giao tiếp với ứng dụng web.  
-- *Amazon S3*: Lưu trữ dữ liệu thô (data lake) và dữ liệu đã xử lý (2 bucket).  
-- *AWS Glue*: Crawlers lập chỉ mục dữ liệu, ETL jobs chuyển đổi và tải dữ liệu.  
-- *AWS Amplify*: Lưu trữ giao diện web Next.js.  
-- *Amazon Cognito*: Quản lý quyền truy cập cho người dùng phòng lab.  
+## 3. Giải pháp đề xuất
 
-*Thiết kế thành phần*  
-- *Thiết bị biên*: Raspberry Pi thu thập và lọc dữ liệu cảm biến, gửi tới IoT Core.  
-- *Tiếp nhận dữ liệu*: AWS IoT Core nhận tin nhắn MQTT từ thiết bị biên.  
-- *Lưu trữ dữ liệu*: Dữ liệu thô lưu trong S3 data lake; dữ liệu đã xử lý lưu ở một S3 bucket khác.  
-- *Xử lý dữ liệu*: AWS Glue Crawlers lập chỉ mục dữ liệu; ETL jobs chuyển đổi để phân tích.  
-- *Giao diện web*: AWS Amplify lưu trữ ứng dụng Next.js cho bảng điều khiển và phân tích thời gian thực.  
-- *Quản lý người dùng*: Amazon Cognito giới hạn 5 tài khoản hoạt động.  
+Giải pháp gồm:
 
-### 4. Triển khai kỹ thuật  
-*Các giai đoạn triển khai*  
-Dự án gồm 2 phần — thiết lập trạm thời tiết biên và xây dựng nền tảng thời tiết — mỗi phần trải qua 4 giai đoạn:  
-1. *Nghiên cứu và vẽ kiến trúc*: Nghiên cứu Raspberry Pi với cảm biến ESP32 và thiết kế kiến trúc AWS Serverless (1 tháng trước kỳ thực tập).  
-2. *Tính toán chi phí và kiểm tra tính khả thi*: Sử dụng AWS Pricing Calculator để ước tính và điều chỉnh (Tháng 1).  
-3. *Điều chỉnh kiến trúc để tối ưu chi phí/giải pháp*: Tinh chỉnh (ví dụ tối ưu Lambda với Next.js) để đảm bảo hiệu quả (Tháng 2).  
-4. *Phát triển, kiểm thử, triển khai*: Lập trình Raspberry Pi, AWS services với CDK/SDK và ứng dụng Next.js, sau đó kiểm thử và đưa vào vận hành (Tháng 2–3).  
+- React 19, TypeScript và Vite cho frontend.
+- Java 17, Spring Boot, Spring Security và JDBC cho REST API.
+- MySQL cho dữ liệu người dùng, token, ví, dịch vụ và giao dịch.
+- BCrypt và JWT cho xác thực; role `user`/`admin` cho phân quyền.
+- Database transaction và khóa hàng ví để bảo vệ cập nhật số dư.
+- Amazon S3 và CloudFront để phân phối frontend.
+- Application Load Balancer và EC2 chạy Dockerized Spring Boot cho backend.
+- Amazon RDS MySQL trong private subnet.
+- Amazon SES SMTP tại Region Singapore (`ap-southeast-1`) qua STARTTLS cho xác minh email và đặt lại mật khẩu; Resend được giữ làm phương án rollback.
+- Cloudflare DNS quản lý domain và các record xác minh email.
 
-*Yêu cầu kỹ thuật*  
-- *Trạm thời tiết biên*: Cảm biến (nhiệt độ, độ ẩm, lượng mưa, tốc độ gió), vi điều khiển ESP32, Raspberry Pi làm thiết bị biên. Raspberry Pi chạy Raspbian, sử dụng Docker để lọc dữ liệu và gửi 1 MB/ngày/trạm qua MQTT qua Wi-Fi.  
-- *Nền tảng thời tiết*: Kiến thức thực tế về AWS Amplify (lưu trữ Next.js), Lambda (giảm thiểu do Next.js xử lý), AWS Glue (ETL), S3 (2 bucket), IoT Core (gateway và rules), và Cognito (5 người dùng). Sử dụng AWS CDK/SDK để lập trình (ví dụ IoT Core rules tới S3). Next.js giúp giảm tải Lambda cho ứng dụng web fullstack.  
+## 4. Kiến trúc giải pháp
 
-### 5. Lộ trình & Mốc triển khai  
-- *Trước thực tập (Tháng 0)*: 1 tháng lên kế hoạch và đánh giá trạm cũ.  
-- *Thực tập (Tháng 1–3)*:  
-    - Tháng 1: Học AWS và nâng cấp phần cứng.  
-    - Tháng 2: Thiết kế và điều chỉnh kiến trúc.  
-    - Tháng 3: Triển khai, kiểm thử, đưa vào sử dụng.  
-- *Sau triển khai*: Nghiên cứu thêm trong vòng 1 năm.  
+Luồng production đề xuất và đã được áp dụng trong dự án:
 
-### 6. Ước tính ngân sách  
-Có thể xem chi phí trên [AWS Pricing Calculator](https://calculator.aws/#/estimate?id=621f38b12a1ef026842ba2ddfe46ff936ed4ab01)  
-Hoặc tải [tệp ước tính ngân sách](../attachments/budget_estimation.pdf).  
+```text
+Người dùng → Cloudflare DNS → Amazon CloudFront
+                                  ├─ Default (*) → S3 frontend
+                                  └─ /api/* → ALB → EC2/Docker/Spring Boot
+                                                       ├─ RDS MySQL
+                                                       └─ Amazon SES SMTP
+```
 
-*Chi phí hạ tầng*  
-- AWS Lambda: 0,00 USD/tháng (1.000 request, 512 MB lưu trữ).  
-- S3 Standard: 0,15 USD/tháng (6 GB, 2.100 request, 1 GB quét).  
-- Truyền dữ liệu: 0,02 USD/tháng (1 GB vào, 1 GB ra).  
-- AWS Amplify: 0,35 USD/tháng (256 MB, request 500 ms).  
-- Amazon API Gateway: 0,01 USD/tháng (2.000 request).  
-- AWS Glue ETL Jobs: 0,02 USD/tháng (2 DPU).  
-- AWS Glue Crawlers: 0,07 USD/tháng (1 crawler).  
-- MQTT (IoT Core): 0,08 USD/tháng (5 thiết bị, 45.000 tin nhắn).  
+> **Hình cần bổ sung:** Sơ đồ kiến trúc Cloud E-Wallet do nhóm xây dựng, thể hiện User, Cloudflare, CloudFront, S3, ALB, EC2, RDS, Internet Gateway, Amazon SES và CloudWatch.
 
-*Tổng*: 0,7 USD/tháng, 8,40 USD/12 tháng  
-- *Phần cứng*: 265 USD một lần (Raspberry Pi 5 và cảm biến).  
+<!-- IMAGE_PATH: /images/2-Proposal/cloud-ewallet-architecture.png -->
+<!-- Sau khi thêm file, bỏ comment dòng Markdown sau: ![Kiến trúc Cloud E-Wallet](/images/2-Proposal/cloud-ewallet-architecture.png) -->
 
-### 7. Đánh giá rủi ro  
-*Ma trận rủi ro*  
-- Mất mạng: Ảnh hưởng trung bình, xác suất trung bình.  
-- Hỏng cảm biến: Ảnh hưởng cao, xác suất thấp.  
-- Vượt ngân sách: Ảnh hưởng trung bình, xác suất thấp.  
+| Thành phần | Vai trò |
+| --- | --- |
+| Cloudflare DNS | Quản lý `cloud-ewallet.com` và record xác minh sender domain |
+| CloudFront | Nhận HTTPS từ trình duyệt; định tuyến frontend và `/api/*` |
+| S3 | Lưu static build React |
+| ALB | Chuyển tiếp API, thực hiện health check backend |
+| EC2 | Chạy Spring Boot trong Docker |
+| RDS MySQL | Lưu dữ liệu trong private subnet |
+| Amazon SES SMTP | Gửi email xác minh và đặt lại mật khẩu; dùng SMTP `587`, xác thực và STARTTLS |
+| CloudWatch | Theo dõi metrics AWS; log/alarm tùy chỉnh chỉ ghi nhận khi có cấu hình thực tế |
 
-*Chiến lược giảm thiểu*  
-- Mạng: Lưu trữ cục bộ trên Raspberry Pi với Docker.  
-- Cảm biến: Kiểm tra định kỳ, dự phòng linh kiện.  
-- Chi phí: Cảnh báo ngân sách AWS, tối ưu dịch vụ.  
+## 5. Triển khai kỹ thuật
 
-*Kế hoạch dự phòng*  
-- Quay lại thu thập thủ công nếu AWS gặp sự cố.  
-- Sử dụng CloudFormation để khôi phục cấu hình liên quan đến chi phí.  
+### Các giai đoạn triển khai
 
-### 8. Kết quả kỳ vọng  
-*Cải tiến kỹ thuật*: Dữ liệu và phân tích thời gian thực thay thế quy trình thủ công. Có thể mở rộng tới 10–15 trạm.  
-*Giá trị dài hạn*: Nền tảng dữ liệu 1 năm cho nghiên cứu AI, có thể tái sử dụng cho các dự án tương lai.
+Dự án được nhóm chúng em thực hiện qua năm giai đoạn:
+
+1. **Nghiên cứu và thiết kế:** Phân tích yêu cầu, xác định phạm vi ví điện tử mô phỏng, thiết kế database và kiến trúc frontend – backend – AWS.
+2. **Phát triển trên môi trường local:** Xây dựng React frontend, Spring Boot REST API và MySQL; hoàn thiện xác thực, phân quyền, nghiệp vụ ví và trang quản trị.
+3. **Đóng gói và chuẩn bị Cloud:** Kiểm thử backend/frontend, Docker hóa Spring Boot, tạo VPC, subnet, Security Group và chuẩn bị RDS.
+4. **Triển khai và tích hợp:** Đưa frontend lên S3/CloudFront, chạy backend container trên EC2 sau ALB, kết nối RDS, cấu hình Cloudflare DNS và Amazon SES SMTP.
+5. **Kiểm thử và hoàn thiện:** Thực hiện health check, smoke test nghiệp vụ, kiểm tra email, rà soát bảo mật mạng, theo dõi chi phí và hoàn thiện tài liệu.
+
+### Yêu cầu kỹ thuật
+
+- **Frontend:** React 19, TypeScript và Vite; build thành static files trên S3, phân phối qua CloudFront và hỗ trợ responsive.
+- **Backend:** Java 17, Spring Boot, Spring Security, JDBC và Actuator; đóng gói Docker, chạy trên EC2 port `8080` và chỉ nhận traffic ứng dụng từ ALB.
+- **Database:** Amazon RDS for MySQL trong private subnet; Security Group chỉ cho phép backend EC2 kết nối port `3306`; dữ liệu tiếng Việt dùng `utf8mb4`.
+- **Email:** Amazon SES SMTP tại `ap-southeast-1`, port `587`, authentication và STARTTLS; domain identity/DKIM được xác minh qua Cloudflare.
+- **Bảo mật:** BCrypt, JWT có thời hạn, role `user`/`admin`, secret nằm ngoài Git, HTTPS từ người dùng đến CloudFront và giới hạn inbound theo Security Group.
+- **Vận hành:** ALB dùng `/actuator/health` để health check; CloudWatch cung cấp metrics AWS; frontend và backend hiện được triển khai thủ công.
+## 6. Phạm vi chức năng
+
+### Người dùng
+
+- Đăng ký, xác minh/gửi lại email xác minh, đăng nhập và đăng xuất.
+- Quên và đặt lại mật khẩu.
+- Xem/cập nhật hồ sơ và số dư.
+- Nạp tiền mô phỏng, tra cứu người nhận, chuyển tiền và thanh toán dịch vụ.
+- Xem lịch sử giao dịch.
+
+### Quản trị viên
+
+- Dashboard tổng quan.
+- Xem và khóa/mở khóa người dùng.
+- Xem giao dịch.
+- Thêm, sửa, kích hoạt hoặc vô hiệu hóa dịch vụ.
+
+### Ngoài phạm vi
+
+Tiền thật, KYC, OTP/SMS thật, payment gateway, ECS/Fargate, Auto Scaling và CI/CD không thuộc phiên bản đề xuất ban đầu. ALB chỉ có một EC2 target nên hệ thống chưa đạt high availability đầy đủ.
+
+## 7. Lợi ích dự kiến
+
+- Tạo sản phẩm thực hành full-stack và AWS có thể demo end-to-end.
+- Tách rõ giao diện, API và cơ sở dữ liệu.
+- Áp dụng xác thực, phân quyền và transaction vào bài toán có số dư.
+- Hỗ trợ giao diện responsive và nội dung tiếng Việt UTF-8.
+- Tạo nền tảng để nghiên cứu thêm ECS, CI/CD, Auto Scaling, WAF và giám sát nâng cao.
+
+## 8. Kế hoạch thực hiện
+
+| Giai đoạn | Nội dung |
+| --- | --- |
+| Tuần 1–2 | Phân tích yêu cầu, thiết kế kiến trúc, database và khởi tạo source |
+| Tuần 3–5 | Xây dựng xác thực, nghiệp vụ ví, giao diện người dùng và admin |
+| Tuần 6 | Kiểm thử, sửa lỗi và Docker hóa backend |
+| Tuần 7–8 | Triển khai S3, CloudFront, EC2, RDS, Amazon SES và ALB; kiểm tra production |
+| Tuần 9 | Hoàn thiện sản phẩm, tài liệu và báo cáo |
+| Tuần 10–11 | Tìm hiểu ECS và CI/CD như hướng phát triển, chưa triển khai production |
+
+## 9. Rủi ro và biện pháp giảm thiểu
+
+| Rủi ro | Ảnh hưởng | Biện pháp |
+| --- | --- | --- |
+| Lộ secret | Cao | Tách file môi trường, dùng placeholder, không commit giá trị thật |
+| Sai lệch số dư | Cao | Transaction, validation và khóa hàng ví |
+| Backend gián đoạn | Cao | Health check ALB; ghi nhận giới hạn một target và đề xuất mở rộng |
+| Chi phí AWS | Trung bình | Theo dõi Billing/Cost Explorer và cleanup tài nguyên |
+| Email không gửi được | Trung bình | Xác minh domain trong SES, kiểm tra trạng thái sandbox, STARTTLS, SMTP credentials, bounce và complaint |
+
+## 10. Chi phí
+
+Chi phí dưới đây là **ước tính**, không phải hóa đơn thực tế. Nhóm chúng em giả định tài nguyên đặt tại Region Singapore (`ap-southeast-1`), sử dụng giá On-Demand, chạy 730 giờ/tháng và chưa gồm thuế hoặc Free Tier. Mức tối đa chỉ là cận trên trong phạm vi giả định của báo cáo; AWS không tự giới hạn chi phí nếu lưu lượng hoặc tài nguyên tiếp tục tăng.
+
+### Chi phí ban đầu
+
+| Khoản chi | Chi phí |
+| --- | ---: |
+| Mua tên miền `cloud-ewallet.com` qua Cloudflare | **10,98 USD** |
+| Phí khởi tạo dịch vụ AWS | **0,00 USD** |
+| **Tổng chi phí ban đầu, thanh toán một lần** | **10,98 USD** |
+
+Tên miền được ghi nhận là khoản mua ban đầu theo số tiền nhóm đã thanh toán và **không được phân bổ vào chi phí duy trì hằng tháng** trong bảng dưới đây. Phí gia hạn trong tương lai chưa được tính vì chưa có số liệu gia hạn thực tế.
+
+### Giả định sử dụng
+
+| Hạng mục | Tối thiểu | Trung bình | Tối đa giả định |
+| --- | --- | --- | --- |
+| EC2 và EBS | 1 `t3.micro`, 730 giờ, 8 GB gp3 | Giống mức tối thiểu | Giống mức tối thiểu |
+| RDS MySQL | 1 `db.t3.micro` Single-AZ, 20 GB | Giống mức tối thiểu | Giống mức tối thiểu |
+| ALB | 730 giờ, trung bình 0,1 LCU | 730 giờ, trung bình 0,3 LCU | 730 giờ, trung bình 1 LCU |
+| S3 | 1 GB, ít request | 5 GB, khoảng 30.000 GET và 3.000 PUT | 20 GB, khoảng 100.000 GET và 10.000 PUT |
+| CloudFront | 5 GB và khoảng 50.000 request | 30 GB và khoảng 250.000 request | 100 GB và khoảng 1.000.000 request |
+| Amazon SES | 1.000 email văn bản/tháng | 3.000 email văn bản/tháng | 10.000 email văn bản/tháng |
+| CloudWatch | Chỉ metrics cơ bản | 1 GB log được ingest | 5 GB log được ingest |
+
+### Chi phí duy trì hằng tháng
+
+| Dịch vụ | Tối thiểu (USD) | Trung bình (USD) | Tối đa giả định (USD) |
+| --- | ---: | ---: | ---: |
+| EC2 `t3.micro` | 9,64 | 9,64 | 9,64 |
+| EBS gp3 8 GB | 0,80 | 0,80 | 0,80 |
+| RDS MySQL `db.t3.micro` + 20 GB | 21,74 | 21,74 | 21,74 |
+| Application Load Balancer + LCU | 18,98 | 20,15 | 24,24 |
+| S3 storage và request | 0,03 | 0,15 | 0,70 |
+| CloudFront data transfer và request | 0,61 | 3,65 | 12,10 |
+| Amazon SES | 0,16 | 0,48 | 1,60 |
+| CloudWatch | 0,00 | 0,50 | 2,50 |
+| **Tổng duy trì ước tính/tháng** | **51,96** | **57,11** | **73,32** |
+| **Tổng tháng đầu nếu cộng tiền mua tên miền** | **62,94** | **68,09** | **84,30** |
+
+### Điều kiện của từng mức chi phí
+
+- **Tối thiểu – 51,96 USD/tháng:** Hệ thống demo chạy liên tục với một EC2 `t3.micro`, một RDS `db.t3.micro` Single-AZ và một ALB; tối đa khoảng 1 GB trên S3, 5 GB qua CloudFront, 1.000 email SES và chỉ dùng metrics CloudWatch cơ bản. Không tính Free Tier, thuế, snapshot hoặc tài nguyên phát sinh ngoài bảng.
+- **Trung bình – 57,11 USD/tháng:** Giữ nguyên cấu hình compute/database nhưng có mức sử dụng thường xuyên hơn: khoảng 5 GB S3, 30 GB CloudFront, 3.000 email SES, 1 GB CloudWatch Logs và trung bình 0,3 LCU. Đây là kịch bản phù hợp cho nhóm dùng thử và trình diễn định kỳ.
+- **Tối đa giả định – 73,32 USD/tháng:** Vẫn giữ một EC2 và một RDS kích thước nhỏ nhưng giả định lưu lượng tăng đến 20 GB S3, 100 GB CloudFront, 10.000 email SES, 5 GB log và trung bình 1 LCU. Nếu phải nâng loại EC2/RDS, thêm target, Multi-AZ, NAT Gateway, WAF hoặc vượt các ngưỡng này, chi phí thực tế có thể cao hơn mức trên.
+
+Giá AWS thay đổi theo thời điểm, Region, loại tài khoản và mức sử dụng thực tế. Trước khi vận hành lâu dài, nhóm cần nhập cấu hình thật vào AWS Pricing Calculator và đối chiếu Billing/Cost Explorer. Tham khảo: [AWS EC2 Pricing](https://aws.amazon.com/ec2/pricing/on-demand/), [Amazon RDS for MySQL Pricing](https://aws.amazon.com/rds/mysql/pricing/), [Elastic Load Balancing Pricing](https://aws.amazon.com/elasticloadbalancing/pricing/), [Amazon CloudFront Pricing](https://aws.amazon.com/cloudfront/pricing/), [Amazon S3 Pricing](https://aws.amazon.com/s3/pricing/) và [Amazon SES Pricing](https://aws.amazon.com/ses/pricing/).
+> **Hình cần bổ sung:** Kết quả AWS Pricing Calculator hoặc Billing đã che thông tin nhạy cảm.
+
+<!-- IMAGE_PATH: /images/2-Proposal/aws-cost-estimate.png -->
+<!-- Sau khi thêm file, bỏ comment dòng Markdown sau: ![Ước tính chi phí AWS](/images/2-Proposal/aws-cost-estimate.png) -->
+
+## 11. Kết quả mong đợi
+
+Sản phẩm có thể truy cập qua `https://cloud-ewallet.com`; frontend được phân phối bởi CloudFront/S3; API đi qua CloudFront/ALB đến Spring Boot container; backend kết nối RDS và gửi email bằng Amazon SES SMTP. Các workflow chính được kiểm thử và giới hạn kiến trúc được trình bày trung thực.
+
+
