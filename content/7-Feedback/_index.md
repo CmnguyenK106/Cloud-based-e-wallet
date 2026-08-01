@@ -45,6 +45,11 @@ I would recommend the program to students who want to learn AWS through practice
 - I suggest organizing recommended labs by learning direction, such as AI, cloud-based web application development, CI/CD, and DevOps. Each direction could specify the recommended order, priorities, and prerequisites so interns know where to begin, which labs to complete, and which path best matches their team project.
 - I hope the office can provide more seats or working space in the future so that interns can visit more regularly, collaborate in person, and discuss their work more conveniently.
 - It would be helpful if previous interns or mentors shared a short list of suitable places to eat near the office. Although this is a small detail, it would help newcomers become familiar with the area and make it easier for members to connect during breaks.
+- I hope the mentors can accept office visit requests early and improve the acceptance rate. According to the conditions for receiving the internship stamp, we need 10 office visits; however, I registered 17 times but was only accepted 7 times, including 1 event.
+
+![Acceptance](/images/7-Feedback/accept.png)
+
+<p style="text-align: center;"><em>Figure 7.1. Acceptance rate.</em></p>
 
 ## Expectations
 
