@@ -45,8 +45,11 @@ Em sẵn sàng giới thiệu chương trình cho các bạn muốn tìm hiểu 
 - Em đề xuất chương trình xây dựng danh sách các bài lab theo từng định hướng như AI, phát triển ứng dụng Web trên Cloud, CI/CD và DevOps. Mỗi hướng có thể nêu thứ tự học, mức độ ưu tiên và kiến thức cần có để thực tập sinh biết nên bắt đầu từ đâu, cần hoàn thành những lab nào và lựa chọn lộ trình phù hợp với đề tài của nhóm.
 - Em hy vọng trong tương lai văn phòng có thể bố trí thêm chỗ ngồi hoặc không gian làm việc để thực tập sinh có điều kiện lên văn phòng thường xuyên hơn, thuận tiện trao đổi trực tiếp và làm việc cùng nhau.
 - Em mong các anh chị khóa trước có thể chia sẻ một danh sách ngắn những quán ăn phù hợp ở khu vực gần công ty. Đây là thông tin nhỏ nhưng hữu ích đối với các bạn mới đến văn phòng và cũng giúp mọi người dễ kết nối hơn trong giờ nghỉ.
-- Em mong chương trình có thể tổ chức thêm các buổi chia sẻ kiến thức hoặc code review giữa các thực tập sinh theo từng nhóm dự án, giúp mọi người học hỏi lẫn nhau, phát hiện sớm các vấn đề kỹ thuật và nâng cao chất lượng sản phẩm nhóm.
+- Em mong các anh chị có thể accept request lên văn phòng sớm, cũng như cải thiện tỷ lệ được accept, vì theo điều kiện để nhận dấu mộc thực tập thì cần 10 buổi lên văn phòng, tuy nhiên bản thân em đã đăng ký 17 lần nhưng chỉ được accept 7 lần, trong đó có 1 event.
 
+![Acception](/images/7-Feedback/accept.png)
+
+<p style="text-align: center;"><em>Hình 7.1. Tỷ lệ accept.</em></p>
 
 ## Mong muốn
 
